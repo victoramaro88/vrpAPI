@@ -13,7 +13,8 @@ namespace VRP.Data.Models
         public string numero { get; set; }
         public string bairro { get; set; }
         public string cep { get; set; }
-        public string pontoGeografico { get; set; }
+        public decimal latitude { get; set; }
+        public decimal longitude { get; set; }
         public string imagem { get; set; }
         public int idCidade { get; set; }
         public int idNumCel { get; set; }

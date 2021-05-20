@@ -28,6 +28,32 @@ namespace apiVRP.Controllers
         }
         #endregion
 
+        [Route("{idVRP?}")]
+        [Produces("application/json")]
+        [HttpGet]
+        public IActionResult ListaVRP(int idVRP = 0)
+        {
+            List<VRPModel> listaRetorno = new List<VRPModel>();
+
+            try
+            {
+                listaRetorno = _appVRPRepo.ListaVRP(idVRP);
+
+                if (listaRetorno.Count > 0)
+                {
+                    return Ok(listaRetorno);
+                }
+                else
+                {
+                    return Ok("Sem informações de retorno.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Erro: " + ex.Message);
+            }
+        }
+
         [Route("{idCidade?}")]
         [Produces("application/json")]
         [HttpGet]
@@ -54,22 +80,27 @@ namespace apiVRP.Controllers
             }
         }
 
-        [Route("{idCidade?}")]
+        [Route("{idVRP}/{temperatura}/{pressaoMont}/{pressaoJus}/{vazao}")]
         [Produces("application/json")]
         [HttpGet]
-        public IActionResult InsereHistVRP(HistoricoVRPModel objVRP)
+        public IActionResult InsereHistVRP(int idVRP, decimal temperatura, decimal pressaoMont, decimal pressaoJus, decimal vazao)
         {
-            string resp = "";
+            //string resp = "";
+            string resp = "OK";
 
-            if (objVRP != null)
+            if (idVRP > 0)
             {
                 try
                 {
-                    resp = _appVRPRepo.InsereHistVRP(objVRP);
+                    //passar valores para obj para inserir
+                    //resp = _appVRPRepo.InsereHistVRP(objVRP);
 
                     if (resp == "OK")
                     {
-                        return Ok(resp);
+                        var parametros = _appVRPRepo.ListaParametrosVRP(idVRP);
+                        var retornoPressao = ConfiguraVRP(parametros);
+
+                        return Ok(retornoPressao);
                     }
                     else
                     {
@@ -84,6 +115,44 @@ namespace apiVRP.Controllers
             else
             {
                 return BadRequest("Parâmetros inválidos.");
+            }
+        }
+
+        [NonAction]
+        private decimal ConfiguraVRP(List<ParametrosVRPModel> listaParametros)
+        {
+            decimal resp = 0;
+            try
+            {
+                foreach (var item in listaParametros)
+                {
+                    DateTime horaAgora = DateTime.Now;
+                    DateTime horaLiga = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(item.horaInicial.Substring(0, 2)), Int32.Parse(item.horaInicial.Substring(3)), 0);
+                    DateTime horaDesLiga = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(item.horaFinal.Substring(0, 2)), Int32.Parse(item.horaFinal.Substring(3)), 0);
+
+                    if (horaLiga < horaDesLiga)
+                    {
+                        if (horaLiga <= horaAgora && horaAgora <= horaDesLiga)
+                        {
+                            resp = item.pressao;
+                        }
+                    }
+                    else
+                    {
+                        var horaL = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59) - horaLiga;
+                        horaL = horaL.Add(TimeSpan.FromSeconds(1));
+                        if (horaLiga <= horaAgora && horaAgora <= horaLiga.Add(horaL).AddHours(horaDesLiga.Hour))
+                        {
+                            resp = item.pressao;
+                        }
+                    }
+                }
+
+                return resp;
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
 

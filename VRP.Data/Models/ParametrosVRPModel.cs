@@ -11,6 +11,6 @@ namespace VRP.Data.Models
         public string horaInicial { get; set; }
         public string horaFinal { get; set; }
         public int idVRP { get; set; }
-        public bool status { get; set; }
+        public bool flStatus { get; set; }
     }
 }
