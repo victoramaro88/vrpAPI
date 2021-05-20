@@ -85,8 +85,13 @@ namespace VRP.Data.Repositories
 
             var query = @"
                             INSERT INTO historicovrp
+                            temperatura, pressaoMont, pressaoJus, vazao, dataHora, idVRP
                             VALUES
-                            (1, 'Daniel', 'Barret'); 
+                            (
+                                @temperatura, @pressaoMont, @pressaoJus, 
+                                @vazao, (SELECT NOW()), @idVRP
+                            );
+                            SELECT 'OK' AS Retorno;
                         ";
 
             using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
@@ -94,7 +99,14 @@ namespace VRP.Data.Repositories
                 MySqlCommand com = new MySqlCommand(query, con);
                 com.Parameters.Add("@temperatura", MySqlDbType.Decimal);
                 com.Parameters["@temperatura"].Value = objVRP.temperatura;
-                //-> CONTINUAR COM OS DEMAIS PARÂMETROS.***********
+                com.Parameters.Add("@pressaoMont", MySqlDbType.Decimal);
+                com.Parameters["@pressaoMont"].Value = objVRP.pressaoMont;
+                com.Parameters.Add("@pressaoJus", MySqlDbType.Decimal);
+                com.Parameters["@pressaoJus"].Value = objVRP.pressaoJus;
+                com.Parameters.Add("@vazao", MySqlDbType.Decimal);
+                com.Parameters["@vazao"].Value = objVRP.vazao;
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = objVRP.idVRP;
                 con.Open();
                 try
                 {
