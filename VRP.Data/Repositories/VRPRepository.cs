@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Text;
+using VRP.Data.Models;
 
 namespace VRP.Data.Repositories
 {
@@ -22,7 +23,6 @@ namespace VRP.Data.Repositories
         }
         #endregion
 
-
         public List<CidadeModel> ListaCidade(int idCidade)
         {
             MySqlDataReader reader = null;
@@ -33,7 +33,7 @@ namespace VRP.Data.Repositories
                             FROM cidade 
                         ";
 
-            if(idCidade > 0)
+            if (idCidade > 0)
             {
                 query += " WHERE idCidade = @idCidade";
             }
@@ -74,6 +74,48 @@ namespace VRP.Data.Repositories
                 }
 
                 return listaRetorno;
+            }
+        }
+
+        public string InsereHistVRP(HistoricoVRPModel objVRP)
+        {
+            MySqlDataReader reader = null;
+            List<CidadeModel> listaRetorno = new List<CidadeModel>();
+            string resp = "";
+
+            var query = @"
+                            INSERT INTO historicovrp
+                            VALUES
+                            (1, 'Daniel', 'Barret'); 
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@temperatura", MySqlDbType.Decimal);
+                com.Parameters["@temperatura"].Value = objVRP.temperatura;
+                //-> CONTINUAR COM OS DEMAIS PARÂMETROS.***********
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        resp = reader["Retorno"].ToString();
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return resp;
             }
         }
     }
