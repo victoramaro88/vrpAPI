@@ -18,6 +18,7 @@ namespace VRP.Data.Models
         public string imagem { get; set; }
         public int idCidade { get; set; }
         public int idNumCel { get; set; }
+        public int tempoEnvioMinutos { get; set; }
         public bool status { get; set; }
     }
 }

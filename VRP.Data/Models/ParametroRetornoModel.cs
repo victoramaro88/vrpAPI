@@ -4,10 +4,10 @@ using System.Text;
 
 namespace VRP.Data.Models
 {
-    public class ParamatrosAdcVRPModel
+    public class ParametroRetornoModel
     {
         public int idVRP { get; set; }
         public decimal pressao { get; set; }
-        public bool flStatus { get; set; }
+        public int tempoEnvioMinutos { get; set; }
     }
 }

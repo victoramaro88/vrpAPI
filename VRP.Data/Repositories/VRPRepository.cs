@@ -32,7 +32,7 @@ namespace VRP.Data.Repositories
                             SELECT 
 	                            idVRP, descrVRP, modelo, logradouro, 
 	                            numero, bairro, cep, latitude, longitude,
-	                            imagem, idCidade, idNumCel, status
+	                            imagem, idCidade, idNumCel, tempoEnvioMinutos, status
                             FROM vrp 
                         ";
 
@@ -72,6 +72,7 @@ namespace VRP.Data.Repositories
                                 imagem = reader["imagem"].ToString(),
                                 idCidade = int.Parse(reader["idCidade"].ToString()),
                                 idNumCel = int.Parse(reader["idNumCel"].ToString()),
+                                tempoEnvioMinutos = int.Parse(reader["tempoEnvioMinutos"].ToString()),
                                 status = reader["status"].ToString() == "1" ? true : false
                             };
 
@@ -201,7 +202,6 @@ namespace VRP.Data.Repositories
             }
         }
 
-
         public List<ParametrosVRPModel> ListaParametrosVRP(int idVRP)
         {
             MySqlDataReader reader = null;
@@ -253,6 +253,95 @@ namespace VRP.Data.Repositories
                 }
 
                 return listaRetorno;
+            }
+        }
+
+        public ParamatrosAdcVRPModel ListaParametroAdicionalVRP(int idVRP)
+        {
+            MySqlDataReader reader = null;
+            ParamatrosAdcVRPModel objRetorno = new ParamatrosAdcVRPModel();
+
+            var query = @"
+                            SELECT
+	                            idVRP, pressao, flStatus
+                            FROM parametrosadcvrp
+                            WHERE idVRP = @idVRP AND flStatus = 1;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = idVRP;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        objRetorno.idVRP = int.Parse(reader["idVRP"].ToString());
+                        objRetorno.pressao = decimal.Parse(reader["pressao"].ToString());
+                        objRetorno.flStatus = reader["flStatus"].ToString() == "1" ? true : false;
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return objRetorno;
+            }
+        }
+
+        public ParamVRPADCModel PesquisaVRPParamAdc(int idVRP)
+        {
+            MySqlDataReader reader = null;
+            ParamVRPADCModel objRetorno = new ParamVRPADCModel();
+
+            var query = @"
+                            SELECT 
+	                            V.idVRP, V.TempoEnvioMinutos, 
+	                            P.pressao, P.flStatus
+                            FROM vrp V
+                            LEFT JOIN parametrosadcvrp P ON P.idVRP = V.idVRP
+                            WHERE V.idVRP = @idVRP;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = idVRP;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        objRetorno.idVRP = int.Parse(reader["idVRP"].ToString());
+                        objRetorno.tempoEnvioMinutos = int.Parse(reader["TempoEnvioMinutos"].ToString());
+                        objRetorno.pressao = decimal.Parse(reader["pressao"].ToString());
+                        objRetorno.flStatusADC = reader["flStatus"].ToString() == "1" ? true : false;
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return objRetorno;
             }
         }
     }

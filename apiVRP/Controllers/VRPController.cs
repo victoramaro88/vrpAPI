@@ -118,37 +118,88 @@ namespace apiVRP.Controllers
             }
         }
 
-        [NonAction]
-        private decimal ConfiguraVRP(List<ParametrosVRPModel> listaParametros)
+        [Produces("application/json")]
+        [HttpPost]
+        public IActionResult InsereHistVRPPOST(ParametrosEntradaModel objEntrada)
         {
-            decimal resp = 0;
-            try
-            {
-                foreach (var item in listaParametros)
-                {
-                    DateTime horaAgora = DateTime.Now;
-                    DateTime horaLiga = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(item.horaInicial.Substring(0, 2)), Int32.Parse(item.horaInicial.Substring(3)), 0);
-                    DateTime horaDesLiga = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(item.horaFinal.Substring(0, 2)), Int32.Parse(item.horaFinal.Substring(3)), 0);
+            //string resp = "";
+            string resp = "OK";
 
-                    if (horaLiga < horaDesLiga)
+            if (objEntrada.idVRP > 0)
+            {
+                try
+                {
+                    //passar valores para obj para inserir
+                    //resp = _appVRPRepo.InsereHistVRP(objVRP);
+
+                    if (resp == "OK")
                     {
-                        if (horaLiga <= horaAgora && horaAgora <= horaDesLiga)
-                        {
-                            resp = item.pressao;
-                        }
+                        var parametros = _appVRPRepo.ListaParametrosVRP(objEntrada.idVRP);
+                        var retornoPressao = ConfiguraVRP(parametros);
+
+                        return Ok(retornoPressao);
                     }
                     else
                     {
-                        var horaL = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59) - horaLiga;
-                        horaL = horaL.Add(TimeSpan.FromSeconds(1));
-                        if (horaLiga <= horaAgora && horaAgora <= horaLiga.Add(horaL).AddHours(horaDesLiga.Hour))
-                        {
-                            resp = item.pressao;
-                        }
+                        return BadRequest("Erro: " + resp);
                     }
                 }
+                catch (Exception ex)
+                {
+                    return BadRequest("Erro: " + ex.Message);
+                }
+            }
+            else
+            {
+                return BadRequest("Parâmetros inválidos.");
+            }
+        }
 
-                return resp;
+        [NonAction]
+        private ParametroRetornoModel ConfiguraVRP(List<ParametrosVRPModel> listaParametros)
+        {
+            ParametroRetornoModel objRet = new ParametroRetornoModel();
+            try
+            {
+                var retInfo = _appVRPRepo.PesquisaVRPParamAdc(listaParametros[0].idVRP);
+                if(retInfo.flStatusADC)
+                {
+                    objRet.idVRP = retInfo.idVRP;
+                    objRet.pressao = retInfo.pressao;
+                    objRet.tempoEnvioMinutos = retInfo.tempoEnvioMinutos;
+                }
+                else
+                {
+                    foreach (var item in listaParametros)
+                    {
+                        DateTime horaAgora = DateTime.Now;
+                        DateTime horaLiga = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(item.horaInicial.Substring(0, 2)), Int32.Parse(item.horaInicial.Substring(3)), 0);
+                        DateTime horaDesLiga = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(item.horaFinal.Substring(0, 2)), Int32.Parse(item.horaFinal.Substring(3)), 0);
+
+                        if (horaLiga < horaDesLiga)
+                        {
+                            if (horaLiga <= horaAgora && horaAgora <= horaDesLiga)
+                            {
+                                objRet.idVRP = listaParametros[0].idVRP;
+                                objRet.pressao = item.pressao;
+                                objRet.tempoEnvioMinutos = retInfo.tempoEnvioMinutos;
+                            }
+                        }
+                        else
+                        {
+                            var horaL = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 23, 59, 59) - horaLiga;
+                            horaL = horaL.Add(TimeSpan.FromSeconds(1));
+                            if (horaLiga <= horaAgora && horaAgora <= horaLiga.Add(horaL).AddHours(horaDesLiga.Hour))
+                            {
+                                objRet.idVRP = listaParametros[0].idVRP;
+                                objRet.pressao = item.pressao;
+                                objRet.tempoEnvioMinutos = retInfo.tempoEnvioMinutos;
+                            }
+                        }
+                    }
+                }                
+
+                return objRet;
             }
             catch (Exception e)
             {
