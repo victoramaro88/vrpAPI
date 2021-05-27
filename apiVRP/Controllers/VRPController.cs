@@ -85,27 +85,43 @@ namespace apiVRP.Controllers
         [HttpGet]
         public IActionResult InsereHistVRP(int idVRP, decimal temperatura, decimal pressaoMont, decimal pressaoJus, decimal vazao)
         {
-            //string resp = "";
-            string resp = "OK";
+            string resp = "";
 
             if (idVRP > 0)
             {
                 try
                 {
-                    //passar valores para obj para inserir
-                    //resp = _appVRPRepo.InsereHistVRP(objVRP);
+                    var retInfo = _appVRPRepo.PesquisaVRPParamAdc(idVRP);
 
-                    if (resp == "OK")
+                    //-> Verifica se está no horário de inserir o histórico e validar a pressão, senão aguarda.
+                    if(retInfo.dataUltimoRegistro.AddMinutes(retInfo.tempoEnvioMinutos) < DateTime.Now)
                     {
-                        var parametros = _appVRPRepo.ListaParametrosVRP(idVRP);
-                        var retornoPressao = ConfiguraVRP(parametros);
+                        HistoricoVRPModel objVRP = new HistoricoVRPModel();
+                        objVRP.temperatura = temperatura;
+                        objVRP.pressaoMont = pressaoMont;
+                        objVRP.pressaoJus = pressaoJus;
+                        objVRP.vazao = vazao;
+                        objVRP.idVRP = idVRP;
+                        resp = _appVRPRepo.InsereHistVRP(objVRP);
 
-                        return Ok(retornoPressao);
+                        if (resp == "OK")
+                        {
+                            var parametros = _appVRPRepo.ListaParametrosVRP(idVRP);
+                            var retornoPressao = ConfiguraVRP(parametros, retInfo);
+
+                            return Ok(retornoPressao);
+                        }
+                        else
+                        {
+                            return BadRequest("Erro: " + resp);
+                        }
                     }
                     else
                     {
-                        return BadRequest("Erro: " + resp);
-                    }
+                        ParametroRetornoModel objRet = new ParametroRetornoModel();
+                        objRet.msg = "Aguardando horário.";
+                        return Ok(objRet);
+                    }                    
                 }
                 catch (Exception ex)
                 {
@@ -118,55 +134,54 @@ namespace apiVRP.Controllers
             }
         }
 
-        [Produces("application/json")]
-        [HttpPost]
-        public IActionResult InsereHistVRPPOST(ParametrosEntradaModel objEntrada)
-        {
-            //string resp = "";
-            string resp = "OK";
+        //[Produces("application/json")]
+        //[HttpPost]
+        //public IActionResult InsereHistVRPPOST(ParametrosEntradaModel objEntrada)
+        //{
+        //    //string resp = "";
+        //    string resp = "OK";
 
-            if (objEntrada.idVRP > 0)
-            {
-                try
-                {
-                    //passar valores para obj para inserir
-                    //resp = _appVRPRepo.InsereHistVRP(objVRP);
+        //    if (objEntrada.idVRP > 0)
+        //    {
+        //        try
+        //        {
+        //            //passar valores para obj para inserir
+        //            //resp = _appVRPRepo.InsereHistVRP(objVRP);
 
-                    if (resp == "OK")
-                    {
-                        var parametros = _appVRPRepo.ListaParametrosVRP(objEntrada.idVRP);
-                        var retornoPressao = ConfiguraVRP(parametros);
+        //            if (resp == "OK")
+        //            {
+        //                var parametros = _appVRPRepo.ListaParametrosVRP(objEntrada.idVRP);
+        //                var retornoPressao = ConfiguraVRP(parametros);
 
-                        return Ok(retornoPressao);
-                    }
-                    else
-                    {
-                        return BadRequest("Erro: " + resp);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest("Erro: " + ex.Message);
-                }
-            }
-            else
-            {
-                return BadRequest("Parâmetros inválidos.");
-            }
-        }
+        //                return Ok(retornoPressao);
+        //            }
+        //            else
+        //            {
+        //                return BadRequest("Erro: " + resp);
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return BadRequest("Erro: " + ex.Message);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Parâmetros inválidos.");
+        //    }
+        //}
 
         [NonAction]
-        private ParametroRetornoModel ConfiguraVRP(List<ParametrosVRPModel> listaParametros)
+        private ParametroRetornoModel ConfiguraVRP(List<ParametrosVRPModel> listaParametros, ParamVRPADCModel retInfo)
         {
             ParametroRetornoModel objRet = new ParametroRetornoModel();
             try
-            {
-                var retInfo = _appVRPRepo.PesquisaVRPParamAdc(listaParametros[0].idVRP);
+            {                
                 if(retInfo.flStatusADC)
                 {
                     objRet.idVRP = retInfo.idVRP;
                     objRet.pressao = retInfo.pressao;
-                    objRet.tempoEnvioMinutos = retInfo.tempoEnvioMinutos;
+                    objRet.msg = "OK";
                 }
                 else
                 {
@@ -182,7 +197,7 @@ namespace apiVRP.Controllers
                             {
                                 objRet.idVRP = listaParametros[0].idVRP;
                                 objRet.pressao = item.pressao;
-                                objRet.tempoEnvioMinutos = retInfo.tempoEnvioMinutos;
+                                objRet.msg = "OK";
                             }
                         }
                         else
@@ -193,7 +208,7 @@ namespace apiVRP.Controllers
                             {
                                 objRet.idVRP = listaParametros[0].idVRP;
                                 objRet.pressao = item.pressao;
-                                objRet.tempoEnvioMinutos = retInfo.tempoEnvioMinutos;
+                                objRet.msg = "OK";
                             }
                         }
                     }

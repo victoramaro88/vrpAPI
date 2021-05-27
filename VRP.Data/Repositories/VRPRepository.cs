@@ -306,11 +306,14 @@ namespace VRP.Data.Repositories
 
             var query = @"
                             SELECT 
-	                            V.idVRP, V.TempoEnvioMinutos, 
-	                            P.pressao, P.flStatus
-                            FROM vrp V
-                            LEFT JOIN parametrosadcvrp P ON P.idVRP = V.idVRP
-                            WHERE V.idVRP = @idVRP;
+		                        V.idVRP, V.TempoEnvioMinutos, 
+		                        P.pressao, P.flStatus, 
+		                        (SELECT dataHora
+			                        FROM historicovrp
+			                        ORDER BY dataHora DESC LIMIT 1) AS dataUltimoRegistro
+	                        FROM vrp V
+	                        LEFT JOIN parametrosadcvrp P ON P.idVRP = V.idVRP
+	                        WHERE V.idVRP = @idVRP;
                         ";
 
             using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
@@ -329,6 +332,8 @@ namespace VRP.Data.Repositories
                         objRetorno.tempoEnvioMinutos = int.Parse(reader["TempoEnvioMinutos"].ToString());
                         objRetorno.pressao = decimal.Parse(reader["pressao"].ToString());
                         objRetorno.flStatusADC = reader["flStatus"].ToString() == "1" ? true : false;
+                        objRetorno.dataUltimoRegistro = reader["dataUltimoRegistro"] != DBNull.Value
+                                                    ? DateTime.Parse(reader["dataUltimoRegistro"].ToString()) : default(DateTime);
                     }
                 }
 

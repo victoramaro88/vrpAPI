@@ -10,5 +10,6 @@ namespace VRP.Data.Models
         public int tempoEnvioMinutos { get; set; }
         public decimal pressao { get; set; }
         public bool flStatusADC { get; set; }
+        public DateTime dataUltimoRegistro { get; set; }
     }
 }

@@ -8,6 +8,6 @@ namespace VRP.Data.Models
     {
         public int idVRP { get; set; }
         public decimal pressao { get; set; }
-        public int tempoEnvioMinutos { get; set; }
+        public string msg { get; set; }
     }
 }
