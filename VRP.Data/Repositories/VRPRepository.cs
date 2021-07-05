@@ -256,6 +256,102 @@ namespace VRP.Data.Repositories
             }
         }
 
+        public string ManterParametrosVRP(List<ParametrosVRPModel> listaParametros)
+        {
+            string retorno = "";
+            var query = "";
+
+            #region REMOVENDO TODOS PARÂMETROS
+            query = @"
+                        DELETE FROM `vrp_horninksys`.`parametrosvrp`
+                        WHERE idVRP = @idVRP;
+
+                        SELECT 'OK' AS Retorno;
+                     ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlDataReader reader = null;
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = listaParametros[0].idVRP;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            retorno = reader["Retorno"].ToString();
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+            #endregion
+
+            #region INSERINDO OS NOVOS PARÂMETROS
+            if (retorno == "OK")
+            {
+                foreach (var item in listaParametros)
+                {
+                    query = @"INSERT INTO `vrp_horninksys`.`parametrosvrp`
+                            (`pressao`,`horaInicial`,`horaFinal`,`idVRP`,`flStatus`)
+                            VALUES
+                            (@pressao, @horaInicial, @horaFinal, @idVRP, 1); 
+
+                        SELECT 'OK' AS Retorno;";
+
+                    using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+                    {
+                        MySqlDataReader reader = null;
+                        MySqlCommand com = new MySqlCommand(query, con);
+                        com.Parameters.Add("@pressao", MySqlDbType.Decimal);
+                        com.Parameters["@pressao"].Value = item.pressao;
+                        com.Parameters.Add("@horaInicial", MySqlDbType.VarChar);
+                        com.Parameters["@horaInicial"].Value = item.horaInicial;
+                        com.Parameters.Add("@horaFinal", MySqlDbType.VarChar);
+                        com.Parameters["@horaFinal"].Value = item.horaFinal;
+                        com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                        com.Parameters["@idVRP"].Value = item.idVRP;
+                        con.Open();
+                        try
+                        {
+                            reader = com.ExecuteReader();
+                            if (reader != null && reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    retorno = reader["Retorno"].ToString();
+                                }
+                            }
+                        }
+
+                        catch (Exception e)
+                        {
+                            throw;
+                        }
+                        finally
+                        {
+                            con.Close();
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            return retorno;
+        }
+
         public ParamatrosAdcVRPModel ListaParametroAdicionalVRP(int idVRP)
         {
             MySqlDataReader reader = null;
@@ -347,6 +443,85 @@ namespace VRP.Data.Repositories
                 }
 
                 return objRetorno;
+            }
+        }
+
+        public List<HistoricoVRPModel> ListaHistoricoVRP(ParamListaHistoricoModel objParametros)
+        {
+            var query = "";
+            MySqlDataReader reader = null;
+            List<HistoricoVRPModel> listaRetorno = new List<HistoricoVRPModel>();
+
+            if(objParametros.dataInicial != null && objParametros.dataFinal != null)
+            {
+                query = @"
+                            SELECT 
+		                            idHistorico, temperatura, pressaoMont, pressaoJus, vazao, dataHora, idVRP
+                            FROM vrp_horninksys.historicovrp 
+                            WHERE idVRP = @idVRP
+                            AND DATE(dataHora) >= @dataInicial
+                            AND DATE(dataHora) <= @dataFinal
+                            ORDER BY dataHora DESC
+                            LIMIT @linhas;
+                        ";
+            }
+            else
+            {
+                query = @"
+                            SELECT 
+		                            idHistorico, temperatura, pressaoMont, pressaoJus, vazao, dataHora, idVRP
+                            FROM vrp_horninksys.historicovrp 
+                            WHERE idVRP = @idVRP
+                            ORDER BY dataHora DESC
+                            LIMIT @linhas;
+                        ";
+            }
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = objParametros.idVRP;
+                com.Parameters.Add("@dataInicial", MySqlDbType.Date);
+                com.Parameters["@dataInicial"].Value = objParametros.dataInicial;
+                com.Parameters.Add("@dataFinal", MySqlDbType.Date);
+                com.Parameters["@dataFinal"].Value = objParametros.dataFinal;
+                com.Parameters.Add("@linhas", MySqlDbType.Int32);
+                com.Parameters["@linhas"].Value = objParametros.linhas;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            var ret = new HistoricoVRPModel()
+                            {
+                                idHistorico = int.Parse(reader["idHistorico"].ToString()),
+                                temperatura = decimal.Parse(reader["temperatura"].ToString()),
+                                pressaoMont = decimal.Parse(reader["pressaoMont"].ToString()),
+                                pressaoJus = decimal.Parse(reader["pressaoJus"].ToString()),
+                                vazao = decimal.Parse(reader["vazao"].ToString()),
+                                dataHora = DateTime.Parse(reader["dataHora"].ToString()),
+                                idVRP = int.Parse(reader["idVRP"].ToString())
+                            };
+
+                            listaRetorno.Add(ret);
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return listaRetorno;
             }
         }
     }
