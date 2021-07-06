@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
 using VRP.Data.Models;
 using VRP.Data.Repositories;
 
@@ -190,9 +188,9 @@ namespace apiVRP.Controllers
         {
             List<HistoricoVRPModel> listaRetorno = new List<HistoricoVRPModel>();
 
-            if(objParametros.idVRP > 0)
+            if (objParametros.idVRP > 0)
             {
-                if(objParametros.linhas <= 0)
+                if (objParametros.linhas <= 0)
                 {
                     objParametros.linhas = 100;
                 }
@@ -218,6 +216,35 @@ namespace apiVRP.Controllers
             else
             {
                 return BadRequest("Id da VRP Inválido!");
+            }
+        }
+
+        [Route("{senhaURL?}")]
+        [Produces("application/json")]
+        [HttpGet]
+        public IActionResult GeraSenhaCripto(string senhaURL = "")
+        {
+            try
+            {
+                GeradorSenhasController objSenha = new GeradorSenhasController();
+                object objRetornoSenha;
+                if (senhaURL.Length <= 8)
+                {
+                    string senha = objSenha.GerarSenha(8);
+                    var senhaCrypto = objSenha.GerarHash(senha);
+                    objRetornoSenha = new { senha, senhaCrypto };
+                }
+                else
+                {
+                    var senhaCrypto = objSenha.GerarHash(senhaURL);
+                    objRetornoSenha = new { senhaCrypto };
+                }
+
+                return Ok(objRetornoSenha);
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 
@@ -309,5 +336,6 @@ namespace apiVRP.Controllers
             }
         }
 
+        
     }
 }
