@@ -1,0 +1,9 @@
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\bin\Release\netcoreapp2.1\Usuario.Data.deps.json
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\bin\Release\netcoreapp2.1\Usuario.Data.dll
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\bin\Release\netcoreapp2.1\Usuario.Data.pdb
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\obj\Release\netcoreapp2.1\Usuario.Data.csproj.AssemblyReference.cache
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\obj\Release\netcoreapp2.1\Usuario.Data.AssemblyInfoInputs.cache
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\obj\Release\netcoreapp2.1\Usuario.Data.AssemblyInfo.cs
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\obj\Release\netcoreapp2.1\Usuario.Data.csproj.CoreCompileInputs.cache
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\obj\Release\netcoreapp2.1\Usuario.Data.dll
+C:\_PROJETOS\_PESSOAL\vrpAPI\Usuario.Data\obj\Release\netcoreapp2.1\Usuario.Data.pdb

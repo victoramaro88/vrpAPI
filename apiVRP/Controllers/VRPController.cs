@@ -219,34 +219,6 @@ namespace apiVRP.Controllers
             }
         }
 
-        [Route("{senhaURL?}")]
-        [Produces("application/json")]
-        [HttpGet]
-        public IActionResult GeraSenhaCripto(string senhaURL = "")
-        {
-            try
-            {
-                GeradorSenhasController objSenha = new GeradorSenhasController();
-                object objRetornoSenha;
-                if (senhaURL.Length <= 8)
-                {
-                    string senha = objSenha.GerarSenha(8);
-                    var senhaCrypto = objSenha.GerarHash(senha);
-                    objRetornoSenha = new { senha, senhaCrypto };
-                }
-                else
-                {
-                    var senhaCrypto = objSenha.GerarHash(senhaURL);
-                    objRetornoSenha = new { senhaCrypto };
-                }
-
-                return Ok(objRetornoSenha);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
 
         //[Produces("application/json")]
         //[HttpPost]

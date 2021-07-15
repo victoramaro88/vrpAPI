@@ -204,5 +204,23 @@ namespace apiVRP.Controllers
             }
             return result;
         }
+
+        [NonAction]
+        public string GerarHashString(string value)
+        {
+            byte[] arrBytes = Encoding.ASCII.GetBytes(value);
+            byte[] result;
+            using (SHA256 shaM = new SHA256Managed())
+            {
+                result = shaM.ComputeHash(arrBytes);
+            }
+            //return result;
+
+            StringBuilder Sb = new StringBuilder();
+            foreach (Byte b in result)
+                Sb.Append(b.ToString("x2"));
+
+            return Sb.ToString();
+        }
     }
 }
