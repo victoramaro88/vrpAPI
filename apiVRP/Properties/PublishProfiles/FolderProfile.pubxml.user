@@ -7,6 +7,6 @@ by editing this MSBuild file. In order to learn more about this please visit htt
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <_PublishTargetUrl>C:\Users\32263773886\Desktop\publish_VRP</_PublishTargetUrl>
-    <History>True|2021-07-15T12:01:07.7933249Z;True|2021-07-05T14:24:36.3615260-03:00;</History>
+    <History>True|2021-07-15T16:45:02.3717226Z;True|2021-07-15T09:01:07.7933249-03:00;True|2021-07-05T14:24:36.3615260-03:00;</History>
   </PropertyGroup>
 </Project>

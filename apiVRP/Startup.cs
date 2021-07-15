@@ -35,6 +35,7 @@ namespace apiVRP
                   {
                       builder.WithOrigins(
                         "http://localhost:4200",
+                        "http://201.39.92.95",
                         "*"
                       )
                 .AllowAnyHeader()
