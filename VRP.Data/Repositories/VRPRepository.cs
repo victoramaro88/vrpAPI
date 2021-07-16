@@ -256,6 +256,63 @@ namespace VRP.Data.Repositories
             }
         }
 
+        public string AlteraItemParaMetroVRP(ParametrosVRPModel objParametro)
+        {
+            string retorno = "";
+            var query = "";
+
+            query = @"
+                        UPDATE `vrp_horninksys`.`parametrosvrp`
+                        SET
+                        `pressao` = @pressao,
+                        `horaInicial` = @horaInicial,
+                        `horaFinal` = @horaFinal,
+                        `flStatus` = @flStatus
+                        WHERE `idParametro` = @idParametro;
+
+                        SELECT 'OK' AS Retorno;
+                     ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+                    {
+                        MySqlDataReader reader = null;
+                        MySqlCommand com = new MySqlCommand(query, con);
+                        com.Parameters.Add("@pressao", MySqlDbType.Decimal);
+                        com.Parameters["@pressao"].Value = objParametro.pressao;
+                        com.Parameters.Add("@horaInicial", MySqlDbType.VarChar);
+                        com.Parameters["@horaInicial"].Value = objParametro.horaInicial;
+                        com.Parameters.Add("@horaFinal", MySqlDbType.VarChar);
+                        com.Parameters["@horaFinal"].Value = objParametro.horaFinal;
+                        com.Parameters.Add("@flStatus", MySqlDbType.Bit);
+                        com.Parameters["@flStatus"].Value = objParametro.flStatus;
+                        com.Parameters.Add("@idParametro", MySqlDbType.Int32);
+                        com.Parameters["@idParametro"].Value = objParametro.idParametro;
+                        con.Open();
+                        try
+                        {
+                            reader = com.ExecuteReader();
+                            if (reader != null && reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    retorno = reader["Retorno"].ToString();
+                                }
+                            }
+                        }
+
+                        catch (Exception e)
+                        {
+                            throw;
+                        }
+                        finally
+                        {
+                            con.Close();
+                        }
+                    }
+
+            return retorno;
+        }
+
         public string ManterParametrosVRP(List<ParametrosVRPModel> listaParametros)
         {
             string retorno = "";

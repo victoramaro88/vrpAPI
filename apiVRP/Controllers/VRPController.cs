@@ -160,6 +160,29 @@ namespace apiVRP.Controllers
 
         [Produces("application/json")]
         [HttpPost]
+        public IActionResult AlteraItemParaMetroVRP([FromBody] ParametrosVRPModel objParametro)
+        {
+            try
+            {
+                if (objParametro != null && objParametro.idParametro > 0)
+                {
+                    var resposta = _appVRPRepo.AlteraItemParaMetroVRP(objParametro);
+
+                    return Ok(resposta);
+                }
+                else
+                {
+                    return Ok("Sem informações de retorno.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Erro: " + ex.Message);
+            }
+        }
+
+        [Produces("application/json")]
+        [HttpPost]
         public IActionResult ManterParametrosVRP([FromBody] List<ParametrosVRPModel> listaParametros)
         {
             try
