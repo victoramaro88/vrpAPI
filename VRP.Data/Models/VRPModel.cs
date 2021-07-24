@@ -17,6 +17,7 @@ namespace VRP.Data.Models
         public decimal longitude { get; set; }
         public string imagem { get; set; }
         public int idCidade { get; set; }
+        public string descCidade { get; set; }
         public int idNumCel { get; set; }
         public int tempoEnvioMinutos { get; set; }
         public bool status { get; set; }

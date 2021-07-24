@@ -30,15 +30,16 @@ namespace VRP.Data.Repositories
 
             var query = @"
                             SELECT 
-	                            idVRP, descrVRP, modelo, logradouro, 
-	                            numero, bairro, cep, latitude, longitude,
-	                            imagem, idCidade, idNumCel, tempoEnvioMinutos, status
-                            FROM vrp 
+                                VRP.idVRP, VRP.descrVRP, VRP.modelo, VRP.logradouro, 
+                                VRP.numero, VRP.bairro, VRP.cep, VRP.latitude, VRP.longitude,
+                                VRP.imagem, VRP.idCidade, CIDADE.descCidade, VRP.idNumCel, VRP.tempoEnvioMinutos, VRP.status
+                            FROM vrp_horninksys.vrp AS VRP
+                            INNER JOIN vrp_horninksys.cidade AS CIDADE ON CIDADE.idCidade = VRP.idCidade
                         ";
 
             if (idVRP > 0)
             {
-                query += " WHERE idVRP = @idVRP;";
+                query += " WHERE VRP.idVRP = @idVRP;";
             }
             else
             {
@@ -71,6 +72,7 @@ namespace VRP.Data.Repositories
                                 longitude = decimal.Parse(reader["longitude"].ToString()),
                                 imagem = reader["imagem"].ToString(),
                                 idCidade = int.Parse(reader["idCidade"].ToString()),
+                                descCidade = reader["descCidade"].ToString(),
                                 idNumCel = int.Parse(reader["idNumCel"].ToString()),
                                 tempoEnvioMinutos = int.Parse(reader["tempoEnvioMinutos"].ToString()),
                                 status = reader["status"].ToString() == "1" ? true : false

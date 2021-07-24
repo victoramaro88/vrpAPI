@@ -206,7 +206,7 @@ namespace apiVRP.Controllers
 
         [Route("{idCidade?}")]
         [Produces("application/json")]
-        [HttpGet]
+        [HttpPost]
         public IActionResult ListaHistoricoVRP(ParamListaHistoricoModel objParametros)
         {
             List<HistoricoVRPModel> listaRetorno = new List<HistoricoVRPModel>();
