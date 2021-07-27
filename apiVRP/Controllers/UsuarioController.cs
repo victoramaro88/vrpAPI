@@ -84,5 +84,23 @@ namespace apiVRP.Controllers
                 return BadRequest("Campos obrigatórios inválidos.");
             }
         }
+
+        [Route("{cpf?}")]
+        [HttpGet]
+        [EnableCors("_myAllowSpecificOrigins")]
+        [Produces("application/json")]
+        public IActionResult BuscarUsuario(string cpf = "")
+        {
+            if (cpf != null)
+            {
+                var ret = _usuarioRepository.BuscarUsuario(cpf);
+
+                return Ok(ret);
+            }
+            else
+            {
+                return BadRequest("Campos obrigatórios inválidos.");
+            }
+        }
     }
 }

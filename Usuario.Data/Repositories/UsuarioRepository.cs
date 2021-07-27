@@ -66,6 +66,63 @@ namespace Usuario.Data.Repositories
                 return objUsuario;
             }
         }
+        public List<UsuarioModel> BuscarUsuario(string cpf)
+        {
+            MySqlDataReader reader = null;
+            List<UsuarioModel> listaUsuario = new List<UsuarioModel>();
+
+            var query = @"
+                            SELECT * FROM vrp_horninksys.usuario
+                        ";
+
+            if (cpf.Length > 0)
+            {
+                query += " WHERE cpfUsuario = @cpf";
+            }
+            else
+            {
+                query += ";";
+            }
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@cpf", MySqlDbType.VarChar);
+                com.Parameters["@cpf"].Value = cpf;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            var objUsuario = new UsuarioModel()
+                            {
+                                idUsuario = int.Parse(reader["idUsuario"].ToString()),
+                                cpfUsuario = reader["cpfUsuario"].ToString(),
+                                nomeUsuario = reader["nomeUsuario"].ToString(),
+                                statusUsuario = (reader["statusUsuario"].ToString() == "1" ? true : false),
+                                idPerfil = int.Parse(reader["idPerfil"].ToString())
+                            };
+
+                            listaUsuario.Add(objUsuario);
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return listaUsuario;
+            }
+        }
 
     }
 }
