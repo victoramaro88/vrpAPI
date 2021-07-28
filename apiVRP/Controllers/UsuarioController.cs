@@ -71,7 +71,16 @@ namespace apiVRP.Controllers
 
                 if (ret != null && ret.idUsuario > 0)
                 {
-                    return Ok(ret);
+                    if (ret.statusUsuario)
+                    {
+                        return Ok(ret);
+                    }
+                    else
+                    {
+                        ret = new UsuarioModel();
+                        ret.erroMensagem = "Usuário inativo no sistema.";
+                        return Ok(ret);
+                    }
                 }
                 else
                 {
@@ -101,6 +110,17 @@ namespace apiVRP.Controllers
             {
                 return BadRequest("Campos obrigatórios inválidos.");
             }
+        }
+
+        [Route("{idPerfil?}")]
+        [HttpGet]
+        [EnableCors("_myAllowSpecificOrigins")]
+        [Produces("application/json")]
+        public IActionResult BuscarPerfil(int idPerfil = 0)
+        {
+            var ret = _usuarioRepository.BuscarPerfil(idPerfil);
+
+            return Ok(ret);
         }
     }
 }

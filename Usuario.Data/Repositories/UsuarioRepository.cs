@@ -20,7 +20,6 @@ namespace Usuario.Data.Repositories
         }
         #endregion
 
-
         public UsuarioModel LoginUsuario(string cpf, string senha)
         {
             MySqlDataReader reader = null;
@@ -121,6 +120,62 @@ namespace Usuario.Data.Repositories
                 }
 
                 return listaUsuario;
+            }
+        }
+        public List<PerfilUsuarioModel> BuscarPerfil(int idPerfil)
+        {
+            MySqlDataReader reader = null;
+            List<PerfilUsuarioModel> listaPerfil = new List<PerfilUsuarioModel>();
+
+            var query = @"
+                            SELECT * FROM vrp_horninksys.perfilusuario
+                            WHERE statusPerfil = 1
+                        ";
+
+            if (idPerfil > 0)
+            {
+                query += " AND idPerfil = @idPerfil";
+            }
+            else
+            {
+                query += ";";
+            }
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idPerfil", MySqlDbType.Int32);
+                com.Parameters["@idPerfil"].Value = idPerfil;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            var objPerfil = new PerfilUsuarioModel()
+                            {
+                                idPerfil = int.Parse(reader["idPerfil"].ToString()),
+                                descPerfil = reader["descPerfil"].ToString(),
+                                statusPerfil = (reader["statusPerfil"].ToString() == "1" ? true : false),
+                            };
+
+                            listaPerfil.Add(objPerfil);
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return listaPerfil;
             }
         }
 
