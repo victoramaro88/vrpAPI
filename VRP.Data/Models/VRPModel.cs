@@ -20,6 +20,7 @@ namespace VRP.Data.Models
         public string descCidade { get; set; }
         public int idNumCel { get; set; }
         public int tempoEnvioMinutos { get; set; }
+        public int fatorMultVaz { get; set; }
         public bool status { get; set; }
     }
 }

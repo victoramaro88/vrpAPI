@@ -104,10 +104,10 @@ namespace apiVRP.Controllers
             }
         }
 
-        [Route("{idVRP}/{temperatura}/{pressaoMont}/{pressaoJus}/{vazao}")]
+        [Route("{idVRP}/{temperatura}/{pressaoMont}/{pressaoJus}/{vazao}/{tensaoBat}")]
         [Produces("application/json")]
         [HttpGet]
-        public IActionResult InsereHistVRP(int idVRP, decimal temperatura, decimal pressaoMont, decimal pressaoJus, decimal vazao)
+        public IActionResult InsereHistVRP(int idVRP, decimal temperatura, decimal pressaoMont, decimal pressaoJus, decimal vazao, decimal tensaoBat)
         {
             string resp = "";
 
@@ -125,6 +125,7 @@ namespace apiVRP.Controllers
                         objVRP.pressaoMont = pressaoMont;
                         objVRP.pressaoJus = pressaoJus;
                         objVRP.vazao = vazao;
+                        objVRP.tensaoBat = tensaoBat;
                         objVRP.idVRP = idVRP;
                         resp = _appVRPRepo.InsereHistVRP(objVRP);
 
@@ -204,10 +205,9 @@ namespace apiVRP.Controllers
             }
         }
 
-        [Route("{idCidade?}")]
         [Produces("application/json")]
         [HttpPost]
-        public IActionResult ListaHistoricoVRP(ParamListaHistoricoModel objParametros)
+        public IActionResult ListaHistoricoVRP([FromBody] ParamListaHistoricoModel objParametros)
         {
             List<HistoricoVRPModel> listaRetorno = new List<HistoricoVRPModel>();
 

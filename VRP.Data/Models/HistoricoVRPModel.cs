@@ -11,6 +11,7 @@ namespace VRP.Data.Models
         public decimal pressaoMont { get; set; }
         public decimal pressaoJus { get; set; }
         public decimal vazao { get; set; }
+        public decimal tensaoBat { get; set; }
         public DateTime dataHora { get; set; }
         public int idVRP { get; set; }
     }
