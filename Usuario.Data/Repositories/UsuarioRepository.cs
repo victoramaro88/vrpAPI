@@ -179,5 +179,9 @@ namespace Usuario.Data.Repositories
             }
         }
 
+        public string ManterUsuario()
+        {
+            return "";
+        }
     }
 }

@@ -465,7 +465,7 @@ namespace VRP.Data.Repositories
 
             var query = @"
                             SELECT 
-		                        V.idVRP, V.TempoEnvioMinutos, 
+		                        V.idVRP, V.TempoEnvioMinutos, V.fatorMultVaz,
 		                        P.pressao, P.flStatus, 
 		                        (SELECT dataHora
 			                        FROM historicovrp
@@ -489,6 +489,7 @@ namespace VRP.Data.Repositories
                         reader.Read();
                         objRetorno.idVRP = int.Parse(reader["idVRP"].ToString());
                         objRetorno.tempoEnvioMinutos = int.Parse(reader["TempoEnvioMinutos"].ToString());
+                        objRetorno.fatorMultVaz = int.Parse(reader["fatorMultVaz"].ToString());
                         objRetorno.pressao = decimal.Parse(reader["pressao"].ToString());
                         objRetorno.flStatusADC = reader["flStatus"].ToString() == "1" ? true : false;
                         objRetorno.dataUltimoRegistro = reader["dataUltimoRegistro"] != DBNull.Value

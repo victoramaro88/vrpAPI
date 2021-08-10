@@ -122,5 +122,15 @@ namespace apiVRP.Controllers
 
             return Ok(ret);
         }
+
+        [HttpPost]
+        [EnableCors("_myAllowSpecificOrigins")]
+        [Produces("application/json")]
+        public IActionResult ManterUsuario(UsuarioModel usuarioModel)
+        {
+            //var ret = _usuarioRepository.BuscarPerfil();
+
+            return Ok("OK");
+        }
     }
 }
