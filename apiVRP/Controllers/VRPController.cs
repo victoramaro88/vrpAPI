@@ -124,7 +124,8 @@ namespace apiVRP.Controllers
                         objVRP.temperatura = temperatura;
                         objVRP.pressaoMont = pressaoMont;
                         objVRP.pressaoJus = pressaoJus;
-                        objVRP.vazao = Math.Round((vazao > 0 ? (((retInfo.fatorMultVaz*60) / vazao) * 60)/1000 : 0), 2);//-> m³/hora
+                        // objVRP.vazao = Math.Round((vazao > 0 ? (((retInfo.fatorMultVaz*60) / vazao) * 60)/1000 : 0), 2);//-> m³/hora
+                        objVRP.vazao = Math.Round((vazao > 0 ? ((retInfo.fatorMultVaz) / vazao) : 0), 2);//-> m³/hora
                         objVRP.tensaoBat = tensaoBat;
                         objVRP.idVRP = idVRP;
                         resp = _appVRPRepo.InsereHistVRP(objVRP);
