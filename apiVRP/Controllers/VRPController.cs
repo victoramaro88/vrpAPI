@@ -243,7 +243,6 @@ namespace apiVRP.Controllers
             }
         }
 
-
         //[Produces("application/json")]
         //[HttpPost]
         //public IActionResult InsereHistVRPPOST(ParametrosEntradaModel objEntrada)

@@ -15,8 +15,8 @@ namespace apiVRP.Controllers
     [ApiController]
     public class UsuarioController : ControllerBase
     {
+        GeradorSenhasController _geradorSenha = new GeradorSenhasController();
         private readonly UsuarioRepository _usuarioRepository;
-
 
         IConfiguration Configuration;
         private IHostingEnvironment _hostingEnvironment;
@@ -128,9 +128,29 @@ namespace apiVRP.Controllers
         [Produces("application/json")]
         public IActionResult ManterUsuario(UsuarioModel usuarioModel)
         {
-            //var ret = _usuarioRepository.BuscarPerfil();
+            var ret = _usuarioRepository.ManterUsuario(usuarioModel);
 
-            return Ok("OK");
+            if (ret == "OK")
+            {
+                if (usuarioModel.senhaUsuario != null)
+                {
+                    usuarioModel.senhaUsuario = _geradorSenha.GerarHashString(usuarioModel.senhaUsuario);
+                    ret = _usuarioRepository.AlteraSenhaUsuario(usuarioModel.idUsuario, usuarioModel.senhaUsuario);
+                }
+            }
+
+            return Ok(ret);
+        }
+
+        [Route("{idUsuario}/{statusUsuario}")]
+        [HttpGet]
+        [EnableCors("_myAllowSpecificOrigins")]
+        [Produces("application/json")]
+        public IActionResult AlteraStatusUsuario(int idUsuario, bool statusUsuario)
+        {
+            var ret = _usuarioRepository.AlteraStatusUsuario(idUsuario, statusUsuario);
+
+            return Ok(ret);
         }
     }
 }

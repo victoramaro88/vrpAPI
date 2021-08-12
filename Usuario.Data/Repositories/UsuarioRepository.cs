@@ -12,6 +12,7 @@ namespace Usuario.Data.Repositories
         private string _scDB_VRP = "";
         private IConfiguration Configuration;
 
+
         #region CONSTRUTOR
         public UsuarioRepository(IConfiguration Configuration)
         {
@@ -71,7 +72,9 @@ namespace Usuario.Data.Repositories
             List<UsuarioModel> listaUsuario = new List<UsuarioModel>();
 
             var query = @"
-                            SELECT * FROM vrp_horninksys.usuario
+                            SELECT 
+                                idUsuario, cpfUsuario, nomeUsuario, senhaUsuario, statusUsuario, idPerfil
+                            FROM vrp_horninksys.usuario
                         ";
 
             if (cpf.Length > 0)
@@ -179,9 +182,151 @@ namespace Usuario.Data.Repositories
             }
         }
 
-        public string ManterUsuario()
+        public string AlteraSenhaUsuario(int idUsuario, string senhaUsuario)
         {
-            return "";
+            MySqlDataReader reader = null;
+            string resp = "";
+
+            var query = @"
+                            UPDATE `vrp_horninksys`.`usuario`
+                            SET
+                            `senhaUsuario` = @senhaUsuario
+                            WHERE `idUsuario` = @idUsuario;
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idUsuario", MySqlDbType.Int32);
+                com.Parameters["@idUsuario"].Value = idUsuario;
+                com.Parameters.Add("@senhaUsuario", MySqlDbType.VarChar);
+                com.Parameters["@senhaUsuario"].Value = senhaUsuario;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            resp = reader["Retorno"].ToString();
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    resp = e.Message;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+
+            return resp;
+        }
+
+        public string ManterUsuario(UsuarioModel objUsuario)
+        {
+            MySqlDataReader reader = null;
+            string resp = "";
+
+            var query = @"
+                            UPDATE `vrp_horninksys`.`usuario`
+                            SET
+                            `cpfUsuario` = @cpfUsuario,
+                            `nomeUsuario` = @nomeUsuario,
+                            `statusUsuario` = @statusUsuario,
+                            `idPerfil` = @idPerfil
+                            WHERE `idUsuario` = @idUsuario;
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idUsuario", MySqlDbType.Int32);
+                com.Parameters["@idUsuario"].Value = objUsuario.idUsuario;
+                com.Parameters.Add("@cpfUsuario", MySqlDbType.VarChar);
+                com.Parameters["@cpfUsuario"].Value = objUsuario.cpfUsuario;
+                com.Parameters.Add("@nomeUsuario", MySqlDbType.VarChar);
+                com.Parameters["@nomeUsuario"].Value = objUsuario.nomeUsuario;
+                com.Parameters.Add("@statusUsuario", MySqlDbType.Bit);
+                com.Parameters["@statusUsuario"].Value = objUsuario.statusUsuario ? 1 : 0;
+                com.Parameters.Add("@idPerfil", MySqlDbType.Int32);
+                com.Parameters["@idPerfil"].Value = objUsuario.idPerfil;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            resp = reader["Retorno"].ToString();
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    resp = e.Message;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+
+            return resp;
+        }
+
+        public string AlteraStatusUsuario(int idUsuario, bool statusUsuario)
+        {
+            MySqlDataReader reader = null;
+            string resp = "";
+
+            var query = @"
+                            UPDATE `vrp_horninksys`.`usuario`
+                            SET
+                            `statusUsuario` = @statusUsuario
+                            WHERE `idUsuario` = @idUsuario;
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idUsuario", MySqlDbType.Int32);
+                com.Parameters["@idUsuario"].Value = idUsuario;
+                com.Parameters.Add("@statusUsuario", MySqlDbType.Bit);
+                com.Parameters["@statusUsuario"].Value = statusUsuario ? 1 : 0;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            resp = reader["Retorno"].ToString();
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    resp = e.Message;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+
+            return resp;
         }
     }
 }
