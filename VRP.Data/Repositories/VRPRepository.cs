@@ -520,7 +520,7 @@ namespace VRP.Data.Repositories
             {
                 query = @"
                             SELECT 
-		                            idHistorico, temperatura, pressaoMont, pressaoJus, vazao, dataHora, idVRP
+		                            idHistorico, temperatura, pressaoMont, pressaoJus, tensaoBat, vazao, dataHora, idVRP
                             FROM vrp_horninksys.historicovrp 
                             WHERE idVRP = @idVRP
                             AND DATE(dataHora) >= @dataInicial
@@ -533,7 +533,7 @@ namespace VRP.Data.Repositories
             {
                 query = @"
                             SELECT 
-		                            idHistorico, temperatura, pressaoMont, pressaoJus, vazao, dataHora, idVRP
+		                            idHistorico, temperatura, pressaoMont, pressaoJus, vazao, tensaoBat, dataHora, idVRP
                             FROM vrp_horninksys.historicovrp 
                             WHERE idVRP = @idVRP
                             ORDER BY dataHora DESC
@@ -567,6 +567,7 @@ namespace VRP.Data.Repositories
                                 pressaoMont = decimal.Parse(reader["pressaoMont"].ToString()),
                                 pressaoJus = decimal.Parse(reader["pressaoJus"].ToString()),
                                 vazao = decimal.Parse(reader["vazao"].ToString()),
+                                tensaoBat = decimal.Parse(reader["tensaoBat"].ToString()),
                                 dataHora = DateTime.Parse(reader["dataHora"].ToString()),
                                 idVRP = int.Parse(reader["idVRP"].ToString())
                             };
