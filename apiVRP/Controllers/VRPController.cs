@@ -125,7 +125,7 @@ namespace apiVRP.Controllers
                         objVRP.pressaoMont = pressaoMont;
                         objVRP.pressaoJus = pressaoJus;
                         // objVRP.vazao = Math.Round((vazao > 0 ? (((retInfo.fatorMultVaz*60) / vazao) * 60)/1000 : 0), 2);//-> m³/hora
-                        objVRP.vazao = Math.Round((vazao > 0 ? ((retInfo.fatorMultVaz) / vazao) : 0), 2);//-> m³/hora
+                        objVRP.vazao = Math.Round((vazao > 0 ? ((retInfo.fatorMultVaz) / vazao) : 0), 2);//-> m³/segundo
                         objVRP.tensaoBat = tensaoBat;
                         objVRP.idVRP = idVRP;
                         resp = _appVRPRepo.InsereHistVRP(objVRP);
@@ -134,6 +134,7 @@ namespace apiVRP.Controllers
                         {
                             var parametros = _appVRPRepo.ListaParametrosVRP(idVRP);
                             var retornoPressao = ConfiguraVRP(parametros, retInfo);
+                            retornoPressao.vazao = objVRP.vazao.ToString();
 
                             return Ok(retornoPressao);
                         }
