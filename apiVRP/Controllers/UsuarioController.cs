@@ -152,5 +152,16 @@ namespace apiVRP.Controllers
 
             return Ok(ret);
         }
+
+        [HttpPost]
+        [EnableCors("_myAllowSpecificOrigins")]
+        [Produces("application/json")]
+        public IActionResult InserirUsuario(UsuarioModel usuarioModel)
+        {
+            usuarioModel.senhaUsuario = _geradorSenha.GerarHashString(usuarioModel.senhaUsuario);
+            var ret = _usuarioRepository.InserirUsuario(usuarioModel);
+
+            return Ok(ret);
+        }
     }
 }

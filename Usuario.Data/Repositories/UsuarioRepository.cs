@@ -227,7 +227,6 @@ namespace Usuario.Data.Repositories
 
             return resp;
         }
-
         public string ManterUsuario(UsuarioModel objUsuario)
         {
             MySqlDataReader reader = null;
@@ -253,6 +252,64 @@ namespace Usuario.Data.Repositories
                 com.Parameters["@cpfUsuario"].Value = objUsuario.cpfUsuario;
                 com.Parameters.Add("@nomeUsuario", MySqlDbType.VarChar);
                 com.Parameters["@nomeUsuario"].Value = objUsuario.nomeUsuario;
+                com.Parameters.Add("@statusUsuario", MySqlDbType.Bit);
+                com.Parameters["@statusUsuario"].Value = objUsuario.statusUsuario ? 1 : 0;
+                com.Parameters.Add("@idPerfil", MySqlDbType.Int32);
+                com.Parameters["@idPerfil"].Value = objUsuario.idPerfil;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            resp = reader["Retorno"].ToString();
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    resp = e.Message;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
+
+            return resp;
+        }
+
+        public string InserirUsuario(UsuarioModel objUsuario)
+        {
+            MySqlDataReader reader = null;
+            string resp = "";
+
+            var query = @"
+                            INSERT INTO `vrp_horninksys`.`usuario`
+                            (`cpfUsuario`, `nomeUsuario`, `senhaUsuario`, `statusUsuario`, `idPerfil`)
+                            VALUES
+                            (
+	                            @cpfUsuario,
+	                            @nomeUsuario,
+	                            @senhaUsuario,
+	                            @statusUsuario,
+	                            @idPerfil
+                            );
+                            SELECT 'OK' as Retorno;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@cpfUsuario", MySqlDbType.VarChar);
+                com.Parameters["@cpfUsuario"].Value = objUsuario.cpfUsuario;
+                com.Parameters.Add("@nomeUsuario", MySqlDbType.VarChar);
+                com.Parameters["@nomeUsuario"].Value = objUsuario.nomeUsuario;
+                com.Parameters.Add("@senhaUsuario", MySqlDbType.VarChar);
+                com.Parameters["@senhaUsuario"].Value = objUsuario.senhaUsuario;
                 com.Parameters.Add("@statusUsuario", MySqlDbType.Bit);
                 com.Parameters["@statusUsuario"].Value = objUsuario.statusUsuario ? 1 : 0;
                 com.Parameters.Add("@idPerfil", MySqlDbType.Int32);
