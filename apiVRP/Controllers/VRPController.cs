@@ -116,11 +116,11 @@ namespace apiVRP.Controllers
                 try
                 {
                     var retInfo = _appVRPRepo.PesquisaVRPParamAdc(idVRP);
+                    HistoricoVRPModel objVRP = new HistoricoVRPModel();
 
                     //-> Verifica se está no horário de inserir o histórico e validar a pressão, senão aguarda.
                     if(retInfo.dataUltimoRegistro.AddMinutes(retInfo.tempoEnvioMinutos) < DateTime.Now)
                     {
-                        HistoricoVRPModel objVRP = new HistoricoVRPModel();
                         objVRP.temperatura = temperatura;
                         objVRP.pressaoMont = pressaoMont;
                         objVRP.pressaoJus = pressaoJus;
