@@ -589,5 +589,68 @@ namespace VRP.Data.Repositories
                 return listaRetorno;
             }
         }
+
+        public List<NumeroCelOperModel> ListaNumeroCelularOperadora(int idNumCel)
+        {
+            MySqlDataReader reader = null;
+            List<NumeroCelOperModel> listaRetorno = new List<NumeroCelOperModel>();
+
+            var query = @"
+                           SELECT 
+	                            numCel.idNumCel, numCel.ddi, numCel.ddd, numCel.numero, numCel.status,
+                                operCel.idOperadora, operCel.descricao AS descricaoOperadora, operCel.status AS statusOperadora
+                            FROM vrp_horninksys.numerocelular AS numCel
+                            INNER JOIN vrp_horninksys.operadoracelular AS operCel 
+	                            ON operCel.idOperadora = numCel.idOperadora
+                        ";
+
+            if (idNumCel > 0)
+            {
+                query += " WHERE numCel.idNumCel = @idNumCel";
+            }
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idNumCel", MySqlDbType.Int32);
+                com.Parameters["@idNumCel"].Value = idNumCel;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            var ret = new NumeroCelOperModel()
+                            {
+                                idNumCel = int.Parse(reader["idNumCel"].ToString()),
+                                ddi = reader["ddi"].ToString(),
+                                ddd = reader["ddd"].ToString(),
+                                numero = reader["numero"].ToString(),
+                                idOperadora = int.Parse(reader["idOperadora"].ToString()),
+                                status = reader["status"].ToString() == "1" ? true : false,
+                                descricaoOperadora = reader["descricaoOperadora"].ToString(),
+                                statusOperadora = reader["statusOperadora"].ToString() == "1" ? true : false
+                            };
+
+                            listaRetorno.Add(ret);
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return listaRetorno;
+            }
+        }
+
     }
 }

@@ -332,6 +332,31 @@ namespace apiVRP.Controllers
             }
         }
 
-        
+
+        [Route("{idNumCel?}")]
+        [Produces("application/json")]
+        [HttpGet]
+        public IActionResult ListaNumeroCelularOperadora(int idNumCel = 0)
+        {
+            List<NumeroCelOperModel> listaRetorno = new List<NumeroCelOperModel>();
+
+            try
+            {
+                listaRetorno = _appVRPRepo.ListaNumeroCelularOperadora(idNumCel);
+
+                if (listaRetorno.Count > 0)
+                {
+                    return Ok(listaRetorno);
+                }
+                else
+                {
+                    return Ok("Sem informações de retorno.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Erro: " + ex.Message);
+            }
+        }
     }
 }
