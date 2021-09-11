@@ -652,5 +652,276 @@ namespace VRP.Data.Repositories
             }
         }
 
+        public string ManterVRP(VRPModel objVRP)
+        {
+            string retorno = "";
+            var query = "";
+
+            if(objVRP.idVRP > 0) {
+                query = @"
+                            UPDATE `vrp_horninksys`.`vrp`
+                            SET
+                            `descrVRP` = @descrVRP,
+                            `modelo` = @modelo,
+                            `logradouro` = @logradouro,
+                            `numero` = @numero,
+                            `bairro` = @bairro,
+                            `cep` = @cep,
+                            `latitude` = @latitude,
+                            `longitude` = @longitude,
+                            `imagem` = @imagem,
+                            `idCidade` = @idCidade,
+                            `idNumCel` = @idNumCel,
+                            `tempoEnvioMinutos` = @tempoEnvioMinutos,
+                            `fatorMultVaz` = @fatorMultVaz,
+                            `status` = @status
+                            WHERE `idVRP` = @idVRP;
+
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+                using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+                {
+                    MySqlDataReader reader = null;
+                    MySqlCommand com = new MySqlCommand(query, con);
+                    com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                    com.Parameters["@idVRP"].Value = objVRP.idVRP;
+                    com.Parameters.Add("@descrVRP", MySqlDbType.VarChar);
+                    com.Parameters["@descrVRP"].Value = objVRP.descrVRP;
+                    com.Parameters.Add("@modelo", MySqlDbType.VarChar);
+                    com.Parameters["@modelo"].Value = objVRP.modelo;
+                    com.Parameters.Add("@logradouro", MySqlDbType.VarChar);
+                    com.Parameters["@logradouro"].Value = objVRP.logradouro;
+                    com.Parameters.Add("@numero", MySqlDbType.VarChar);
+                    com.Parameters["@numero"].Value = objVRP.numero;
+                    com.Parameters.Add("@bairro", MySqlDbType.VarChar);
+                    com.Parameters["@bairro"].Value = objVRP.bairro;
+                    com.Parameters.Add("@cep", MySqlDbType.VarChar);
+                    com.Parameters["@cep"].Value = objVRP.cep;
+                    com.Parameters.Add("@latitude", MySqlDbType.Decimal);
+                    com.Parameters["@latitude"].Value = objVRP.latitude;
+                    com.Parameters.Add("@longitude", MySqlDbType.Decimal);
+                    com.Parameters["@longitude"].Value = objVRP.longitude;
+                    com.Parameters.Add("@imagem", MySqlDbType.VarChar);
+                    com.Parameters["@imagem"].Value = objVRP.imagem;
+                    com.Parameters.Add("@idCidade", MySqlDbType.Int32);
+                    com.Parameters["@idCidade"].Value = objVRP.idCidade;
+                    com.Parameters.Add("@idNumCel", MySqlDbType.Int32);
+                    com.Parameters["@idNumCel"].Value = objVRP.idNumCel;
+                    com.Parameters.Add("@tempoEnvioMinutos", MySqlDbType.Int32);
+                    com.Parameters["@tempoEnvioMinutos"].Value = objVRP.tempoEnvioMinutos;
+                    com.Parameters.Add("@fatorMultVaz", MySqlDbType.Int32);
+                    com.Parameters["@fatorMultVaz"].Value = objVRP.fatorMultVaz;
+                    com.Parameters.Add("@status", MySqlDbType.Bit);
+                    com.Parameters["@status"].Value = objVRP.status ? 1 : 0;
+                    con.Open();
+                    try
+                    {
+                        reader = com.ExecuteReader();
+                        if (reader != null && reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                retorno = reader["Retorno"].ToString();
+                            }
+                        }
+                    }
+
+                    catch (Exception e)
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        con.Close();
+                    }
+                }
+            } else {
+                query = @"
+                            INSERT INTO `vrp_horninksys`.`vrp`
+                            (`descrVRP`, `modelo`, `logradouro`, `numero`, `bairro`, `cep`, `latitude`, `longitude`, `imagem`, `idCidade`, `idNumCel`, `tempoEnvioMinutos`, `fatorMultVaz`, `status`)
+                            VALUES
+                            (
+                                @descrVRP,
+                                @modelo,
+                                @logradouro,
+                                @numero,
+                                @bairro,
+                                @cep,
+                                @latitude,
+                                @longitude,
+                                @imagem,
+                                @idCidade,
+                                @idNumCel,
+                                @tempoEnvioMinutos,
+                                @fatorMultVaz,
+                                @status
+                            );
+
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+                using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+                {
+                    MySqlDataReader reader = null;
+                    MySqlCommand com = new MySqlCommand(query, con);
+                    com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                    com.Parameters["@idVRP"].Value = objVRP.idVRP;
+                    com.Parameters.Add("@descrVRP", MySqlDbType.VarChar);
+                    com.Parameters["@descrVRP"].Value = objVRP.descrVRP;
+                    com.Parameters.Add("@modelo", MySqlDbType.VarChar);
+                    com.Parameters["@modelo"].Value = objVRP.modelo;
+                    com.Parameters.Add("@logradouro", MySqlDbType.VarChar);
+                    com.Parameters["@logradouro"].Value = objVRP.logradouro;
+                    com.Parameters.Add("@numero", MySqlDbType.VarChar);
+                    com.Parameters["@numero"].Value = objVRP.numero;
+                    com.Parameters.Add("@bairro", MySqlDbType.VarChar);
+                    com.Parameters["@bairro"].Value = objVRP.bairro;
+                    com.Parameters.Add("@cep", MySqlDbType.VarChar);
+                    com.Parameters["@cep"].Value = objVRP.cep;
+                    com.Parameters.Add("@latitude", MySqlDbType.Decimal);
+                    com.Parameters["@latitude"].Value = objVRP.latitude;
+                    com.Parameters.Add("@longitude", MySqlDbType.Decimal);
+                    com.Parameters["@longitude"].Value = objVRP.longitude;
+                    com.Parameters.Add("@imagem", MySqlDbType.VarChar);
+                    com.Parameters["@imagem"].Value = objVRP.imagem;
+                    com.Parameters.Add("@idCidade", MySqlDbType.Int32);
+                    com.Parameters["@idCidade"].Value = objVRP.idCidade;
+                    com.Parameters.Add("@idNumCel", MySqlDbType.Int32);
+                    com.Parameters["@idNumCel"].Value = objVRP.idNumCel;
+                    com.Parameters.Add("@tempoEnvioMinutos", MySqlDbType.Int32);
+                    com.Parameters["@tempoEnvioMinutos"].Value = objVRP.tempoEnvioMinutos;
+                    com.Parameters.Add("@fatorMultVaz", MySqlDbType.Int32);
+                    com.Parameters["@fatorMultVaz"].Value = objVRP.fatorMultVaz;
+                    com.Parameters.Add("@status", MySqlDbType.Bit);
+                    com.Parameters["@status"].Value = objVRP.status ? 1 : 0;
+                    con.Open();
+                    try
+                    {
+                        reader = com.ExecuteReader();
+                        if (reader != null && reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                retorno = reader["Retorno"].ToString();
+                            }
+                        }
+                    }
+
+                    catch (Exception e)
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        con.Close();
+                    }
+                }
+            }
+
+            return retorno;
+        }
+    
+        public List<VRPModel> VerificaNumCelVRP(int idNumCel) {
+            MySqlDataReader reader = null;
+            List<VRPModel> listaRetorno = new List<VRPModel>();
+
+            var query = @"
+                            SELECT 
+                                VRP.idVRP, VRP.descrVRP, VRP.modelo, VRP.logradouro, 
+                                VRP.numero, VRP.bairro, VRP.cep, VRP.latitude, VRP.longitude,
+                                VRP.imagem, VRP.idCidade, VRP.idNumCel, VRP.tempoEnvioMinutos, 
+                                VRP.fatorMultVaz, VRP.status
+                            FROM vrp_horninksys.vrp AS VRP
+                            WHERE VRP.idNumCel = @idVRP;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idNumCel", MySqlDbType.Int32);
+                com.Parameters["@idNumCel"].Value = idNumCel;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            var ret = new VRPModel()
+                            {
+                                idVRP = int.Parse(reader["idVRP"].ToString()),
+                                descrVRP = reader["descrVRP"].ToString(),
+                                modelo = reader["modelo"].ToString(),
+                                logradouro = reader["logradouro"].ToString(),
+                                numero = reader["numero"].ToString(),
+                                bairro = reader["bairro"].ToString(),
+                                cep = reader["cep"].ToString(),
+                                latitude = decimal.Parse(reader["latitude"].ToString()),
+                                longitude = decimal.Parse(reader["longitude"].ToString()),
+                                imagem = reader["imagem"].ToString(),
+                                idCidade = int.Parse(reader["idCidade"].ToString()),
+                                descCidade = reader["descCidade"].ToString(),
+                                idNumCel = int.Parse(reader["idNumCel"].ToString()),
+                                tempoEnvioMinutos = int.Parse(reader["tempoEnvioMinutos"].ToString()),
+                                fatorMultVaz = int.Parse(reader["fatorMultVaz"].ToString()),
+                                status = reader["status"].ToString() == "1" ? true : false
+                            };
+
+                            listaRetorno.Add(ret);
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return listaRetorno;
+            }
+        }
+
+        public List<int> ListaIDsNumCelUsados() {
+            MySqlDataReader reader = null;
+            List<int> listaRetorno = new List<int>();
+
+            var query = @"
+                            SELECT idNumCel FROM vrp_horninksys.vrp;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            listaRetorno.Add(int.Parse(reader["idNumCel"].ToString()));
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return listaRetorno;
+            }
+        }
     }
 }

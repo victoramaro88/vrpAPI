@@ -358,5 +358,79 @@ namespace apiVRP.Controllers
                 return BadRequest("Erro: " + ex.Message);
             }
         }
+    
+        [Produces("application/json")]
+        [HttpPost]
+        public IActionResult ManterVRP([FromBody] VRPModel objVRP)
+        {
+            try
+            {
+                if (objVRP != null)
+                {
+                    var resposta = _appVRPRepo.ManterVRP(objVRP);
+
+                    return Ok(resposta);
+                }
+                else
+                {
+                    return Ok("Sem informações de retorno.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Erro: " + ex.Message);
+            }
+        }
+
+        [Route("{idNumCel}")]
+        [Produces("application/json")]
+        [HttpGet]
+        public IActionResult VerificaNumCelVRP(int idNumCel)
+        {
+            List<VRPModel> listaRetorno = new List<VRPModel>();
+
+            try
+            {
+                listaRetorno = _appVRPRepo.ListaVRP(idNumCel);
+
+                if (listaRetorno.Count > 0)
+                {
+                    return Ok(listaRetorno);
+                }
+                else
+                {
+                    return Ok("Sem informações de retorno.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Erro: " + ex.Message);
+            }
+        }
+
+        [Produces("application/json")]
+        [HttpGet]
+        public IActionResult ListaIDsNumCelUsados()
+        {
+            List<int> listaRetorno = new List<int>();
+
+            try
+            {
+                listaRetorno = _appVRPRepo.ListaIDsNumCelUsados();
+
+                if (listaRetorno.Count > 0)
+                {
+                    return Ok(listaRetorno);
+                }
+                else
+                {
+                    return Ok("Sem informações de retorno.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Erro: " + ex.Message);
+            }
+        }
     }
 }
