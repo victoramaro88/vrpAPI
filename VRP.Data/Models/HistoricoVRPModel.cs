@@ -8,9 +8,11 @@ namespace VRP.Data.Models
     {
         public int idHistorico { get; set; }
         public decimal temperatura { get; set; }
+        public decimal chuva { get; set; }
         public decimal pressaoMont { get; set; }
         public decimal pressaoJus { get; set; }
         public decimal vazao { get; set; }
+        public decimal volume { get; set; }
         public decimal tensaoBat { get; set; }
         public DateTime dataHora { get; set; }
         public int idVRP { get; set; }

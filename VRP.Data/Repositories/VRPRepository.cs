@@ -160,11 +160,11 @@ namespace VRP.Data.Repositories
 
             var query = @"
                             INSERT INTO historicovrp
-                            (temperatura, pressaoMont, pressaoJus, vazao, tensaoBat, dataHora, idVRP)
+                            (temperatura, chuva, pressaoMont, pressaoJus, vazao, volume, tensaoBat, dataHora, idVRP)
                             VALUES
                             (
-                                @temperatura, @pressaoMont, @pressaoJus, 
-                                @vazao, @tensaoBat, (SELECT NOW()), @idVRP
+                                @temperatura, @chuva, @pressaoMont, @pressaoJus, 
+                                @vazao, @volume, @tensaoBat, (SELECT NOW()), @idVRP
                             );
                             SELECT 'OK' AS Retorno;
                         ";
@@ -174,12 +174,16 @@ namespace VRP.Data.Repositories
                 MySqlCommand com = new MySqlCommand(query, con);
                 com.Parameters.Add("@temperatura", MySqlDbType.Decimal);
                 com.Parameters["@temperatura"].Value = objVRP.temperatura;
+                com.Parameters.Add("@chuva", MySqlDbType.Decimal);
+                com.Parameters["@chuva"].Value = objVRP.chuva;
                 com.Parameters.Add("@pressaoMont", MySqlDbType.Decimal);
                 com.Parameters["@pressaoMont"].Value = objVRP.pressaoMont;
                 com.Parameters.Add("@pressaoJus", MySqlDbType.Decimal);
                 com.Parameters["@pressaoJus"].Value = objVRP.pressaoJus;
                 com.Parameters.Add("@vazao", MySqlDbType.Decimal);
                 com.Parameters["@vazao"].Value = objVRP.vazao;
+                com.Parameters.Add("@volume", MySqlDbType.Decimal);
+                com.Parameters["@volume"].Value = objVRP.volume;
                 com.Parameters.Add("@tensaoBat", MySqlDbType.Decimal);
                 com.Parameters["@tensaoBat"].Value = objVRP.tensaoBat;
                 com.Parameters.Add("@idVRP", MySqlDbType.Int32);
@@ -216,7 +220,7 @@ namespace VRP.Data.Repositories
             var query = @"
                             SELECT
 	                            idParametro, pressao, horaInicial, horaFinal,
-	                            idVRP, flStatus
+	                            pressaoFds, idVRP, flStatus
                             FROM parametrosvrp
                             WHERE idVRP = @idVRP and flStatus = 1;
                         ";
@@ -240,6 +244,7 @@ namespace VRP.Data.Repositories
                                 pressao = decimal.Parse(reader["pressao"].ToString()),
                                 horaInicial = reader["horaInicial"].ToString(),
                                 horaFinal = reader["horaFinal"].ToString(),
+                                pressaoFds = decimal.Parse(reader["pressaoFds"].ToString()),
                                 idVRP = int.Parse(reader["idVRP"].ToString()),
                                 flStatus = reader["flStatus"].ToString() == "1" ? true : false
                             };
@@ -273,6 +278,7 @@ namespace VRP.Data.Repositories
                         `pressao` = @pressao,
                         `horaInicial` = @horaInicial,
                         `horaFinal` = @horaFinal,
+                        `pressaoFds` = @pressaoFds,
                         `flStatus` = @flStatus
                         WHERE `idParametro` = @idParametro;
 
@@ -289,6 +295,8 @@ namespace VRP.Data.Repositories
                         com.Parameters["@horaInicial"].Value = objParametro.horaInicial;
                         com.Parameters.Add("@horaFinal", MySqlDbType.VarChar);
                         com.Parameters["@horaFinal"].Value = objParametro.horaFinal;
+                        com.Parameters.Add("@pressaoFds", MySqlDbType.Decimal);
+                        com.Parameters["@pressaoFds"].Value = objParametro.pressaoFds;
                         com.Parameters.Add("@flStatus", MySqlDbType.Bit);
                         com.Parameters["@flStatus"].Value = objParametro.flStatus;
                         com.Parameters.Add("@idParametro", MySqlDbType.Int32);
@@ -368,9 +376,9 @@ namespace VRP.Data.Repositories
                 foreach (var item in listaParametros)
                 {
                     query = @"INSERT INTO `vrp_horninksys`.`parametrosvrp`
-                            (`pressao`,`horaInicial`,`horaFinal`,`idVRP`,`flStatus`)
+                            (`pressao`,`pressaoFds`,`horaInicial`,`horaFinal`,`idVRP`,`flStatus`)
                             VALUES
-                            (@pressao, @horaInicial, @horaFinal, @idVRP, 1); 
+                            (@pressao, @pressaoFds, @horaInicial, @horaFinal, @idVRP, 1); 
 
                         SELECT 'OK' AS Retorno;";
 
@@ -380,6 +388,8 @@ namespace VRP.Data.Repositories
                         MySqlCommand com = new MySqlCommand(query, con);
                         com.Parameters.Add("@pressao", MySqlDbType.Decimal);
                         com.Parameters["@pressao"].Value = item.pressao;
+                        com.Parameters.Add("@pressaoFds", MySqlDbType.Decimal);
+                        com.Parameters["@pressaoFds"].Value = item.pressaoFds;
                         com.Parameters.Add("@horaInicial", MySqlDbType.VarChar);
                         com.Parameters["@horaInicial"].Value = item.horaInicial;
                         com.Parameters.Add("@horaFinal", MySqlDbType.VarChar);
@@ -520,7 +530,7 @@ namespace VRP.Data.Repositories
             {
                 query = @"
                             SELECT 
-		                            idHistorico, temperatura, pressaoMont, pressaoJus, tensaoBat, vazao, dataHora, idVRP
+		                            idHistorico, temperatura, chuva, pressaoMont, pressaoJus, tensaoBat, vazao, volume, dataHora, idVRP
                             FROM vrp_horninksys.historicovrp 
                             WHERE idVRP = @idVRP
                             AND DATE(dataHora) >= @dataInicial
@@ -533,7 +543,7 @@ namespace VRP.Data.Repositories
             {
                 query = @"
                             SELECT 
-		                            idHistorico, temperatura, pressaoMont, pressaoJus, vazao, tensaoBat, dataHora, idVRP
+		                            idHistorico, temperatura, chuva, pressaoMont, pressaoJus, vazao, volume, tensaoBat, dataHora, idVRP
                             FROM vrp_horninksys.historicovrp 
                             WHERE idVRP = @idVRP
                             ORDER BY dataHora DESC
@@ -564,9 +574,11 @@ namespace VRP.Data.Repositories
                             {
                                 idHistorico = int.Parse(reader["idHistorico"].ToString()),
                                 temperatura = decimal.Parse(reader["temperatura"].ToString()),
+                                chuva = decimal.Parse(reader["chuva"].ToString()),
                                 pressaoMont = decimal.Parse(reader["pressaoMont"].ToString()),
                                 pressaoJus = decimal.Parse(reader["pressaoJus"].ToString()),
                                 vazao = decimal.Parse(reader["vazao"].ToString()),
+                                volume = decimal.Parse(reader["volume"].ToString()),
                                 tensaoBat = decimal.Parse(reader["tensaoBat"].ToString()),
                                 dataHora = DateTime.Parse(reader["dataHora"].ToString()),
                                 idVRP = int.Parse(reader["idVRP"].ToString())

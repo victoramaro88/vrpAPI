@@ -122,10 +122,12 @@ namespace apiVRP.Controllers
                     if(retInfo.dataUltimoRegistro.AddMinutes(retInfo.tempoEnvioMinutos) < DateTime.Now)
                     {
                         objVRP.temperatura = temperatura;
+                        objVRP.chuva = 0; //-> RECEBER ESTE PARÂMETRO DA BASE DO EDER.
                         objVRP.pressaoMont = pressaoMont;
                         objVRP.pressaoJus = pressaoJus;
                         // objVRP.vazao = Math.Round((vazao > 0 ? (((retInfo.fatorMultVaz*60) / vazao) * 60)/1000 : 0), 2);//-> m³/hora
-                        objVRP.vazao = Math.Round((vazao > 0 ? ((retInfo.fatorMultVaz) / vazao) : 0), 2);//-> m³/segundo
+                        objVRP.vazao = Math.Round((vazao > 0 ? ((retInfo.fatorMultVaz) / vazao) : 0), 2);//-> Litros/segundo
+                        objVRP.volume = 0; //-> FAZER O CÁLCULO DO VOLUME AQUI
                         objVRP.tensaoBat = tensaoBat;
                         objVRP.idVRP = idVRP;
                         resp = _appVRPRepo.InsereHistVRP(objVRP);
@@ -301,12 +303,22 @@ namespace apiVRP.Controllers
                         DateTime horaLiga = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(item.horaInicial.Substring(0, 2)), Int32.Parse(item.horaInicial.Substring(3)), 0);
                         DateTime horaDesLiga = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, Int32.Parse(item.horaFinal.Substring(0, 2)), Int32.Parse(item.horaFinal.Substring(3)), 0);
 
+                        //-> Pegando o dia da semana para validar a pressão correta
+                        String diaSemana = DateTime.Now.DayOfWeek.ToString();
+
                         if (horaLiga < horaDesLiga)
                         {
                             if (horaLiga <= horaAgora && horaAgora <= horaDesLiga)
                             {
                                 objRet.idVRP = listaParametros[0].idVRP;
-                                objRet.pressao = item.pressao;
+                                if(diaSemana == "Saturday" || diaSemana == "Sunday")
+                                {
+                                    objRet.pressao = item.pressaoFds;
+                                }
+                                else
+                                {
+                                    objRet.pressao = item.pressao;
+                                }
                                 objRet.msg = "OK";
                             }
                         }
@@ -317,7 +329,14 @@ namespace apiVRP.Controllers
                             if (horaLiga <= horaAgora && horaAgora <= horaLiga.Add(horaL).AddHours(horaDesLiga.Hour))
                             {
                                 objRet.idVRP = listaParametros[0].idVRP;
-                                objRet.pressao = item.pressao;
+                                if(diaSemana == "Saturday" || diaSemana == "Sunday")
+                                {
+                                    objRet.pressao = item.pressaoFds;
+                                }
+                                else
+                                {
+                                    objRet.pressao = item.pressao;
+                                }
                                 objRet.msg = "OK";
                             }
                         }
