@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PC.Data\PC.Data.csproj" />
     <ProjectReference Include="..\Usuario.Data\Usuario.Data.csproj" />
     <ProjectReference Include="..\VRP.Data\VRP.Data.csproj" />
   </ItemGroup>
