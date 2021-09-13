@@ -59,7 +59,7 @@ namespace PC.Data.Repositories
                             var ret = new PontoCriticoModel()
                             {
                                 idPC = int.Parse(reader["idPC"].ToString()),
-                                descPC = reader["descPC"].ToString(),
+                                descPC = reader["descrPC"].ToString(),
                                 modeloPC = reader["modeloPC"].ToString(),
                                 logradouroPC = reader["logradouroPC"].ToString(),
                                 numeroPC = reader["numeroPC"].ToString(),
@@ -92,6 +92,55 @@ namespace PC.Data.Repositories
                 }
 
                 return listaRetorno;
+            }
+        }
+
+        public PCParamHistModel ListaPontoCriticoParametrosHist(int idPC)
+        {
+            MySqlDataReader reader = null;
+            PCParamHistModel objRetorno = new PCParamHistModel();
+
+            var query = @"
+                            SELECT 
+                                PC.idPC, PC.tempoEnvioMinutos, PC.fatorMultVaz, PC.statusVazao
+                                , (SELECT dataHoraPC
+		                            FROM vrp_horninksys.historicopontocritico
+		                            ORDER BY dataHoraPC DESC LIMIT 1) AS dataUltimoRegistro
+                            FROM vrp_horninksys.pontocritico AS PC
+                            WHERE PC.idPC = @idPC;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idPC", MySqlDbType.Int32);
+                com.Parameters["@idPC"].Value = idPC;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        objRetorno.idPC = int.Parse(reader["idPC"].ToString());
+                        objRetorno.tempoEnvioMinutos = int.Parse(reader["TempoEnvioMinutos"].ToString());
+                        objRetorno.fatorMultVaz = int.Parse(reader["fatorMultVaz"].ToString());
+                        objRetorno.statusVazao = reader["statusVazao"].ToString() == "1" ? true : false;
+                        objRetorno.dataUltimoRegistro = reader["dataUltimoRegistro"] != DBNull.Value
+                                                    ? DateTime.Parse(reader["dataUltimoRegistro"].ToString()) : default(DateTime);
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return objRetorno;
             }
         }
 
@@ -250,6 +299,334 @@ namespace PC.Data.Repositories
                 }
 
                 return listaRetorno;
+            }
+        }
+
+        public string InserirHistoricoPC(HistoricoPontoCriticoModel objHistPC)
+        {
+            MySqlDataReader reader = null;
+            string resp = "";
+
+            var query = @"
+                            INSERT INTO `vrp_horninksys`.`historicopontocritico`
+                            (`idPC`, `pressaoPC`,`vazaoPC`,`tensaoBateriaPC`, `dataHoraPC`)
+                            VALUES
+                            (
+                                @idPC,
+                                @pressaoPC,
+                                @vazaoPC,
+                                @tensaoBateriaPC,
+                                (SELECT NOW())
+                            );
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idPC", MySqlDbType.Int32);
+                com.Parameters["@idPC"].Value = objHistPC.idPC;
+                com.Parameters.Add("@pressaoPC", MySqlDbType.Decimal);
+                com.Parameters["@pressaoPC"].Value = objHistPC.pressaoPC;
+                com.Parameters.Add("@vazaoPC", MySqlDbType.Decimal);
+                com.Parameters["@vazaoPC"].Value = objHistPC.vazaoPC;
+                com.Parameters.Add("@tensaoBateriaPC", MySqlDbType.Decimal);
+                com.Parameters["@tensaoBateriaPC"].Value = objHistPC.tensaoBateriaPC;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        resp = reader["Retorno"].ToString();
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return resp;
+            }
+        }
+
+        public string ManterPC(PontoCriticoModel objPC)
+        {
+            string retorno = "";
+            var query = "";
+
+            if (objPC.idPC > 0)
+            {
+                query = @"
+                            UPDATE `vrp_horninksys`.`pontocritico`
+                            SET
+                            `idPC` = @idPC,
+                            `descrPC` = @descPC,
+                            `modeloPC` = @modeloPC,
+                            `logradouroPC` = @logradouroPC,
+                            `numeroPC` = @numeroPC,
+                            `bairroPC` = @bairroPC,
+                            `cepPC` = @cepPC,
+                            `latitudePC` = @latitudePC,
+                            `longitudePC` = @longitudePC,
+                            `imagemPC` = @imagemPC,
+                            `idCidade` = @idCidade,
+                            `idNumCel` = @idNumCel,
+                            `tempoEnvioMinutos` = @tempoEnvioMinutos,
+                            `fatorMultVaz` = @fatorMultVaz,
+                            `statusVazao` = @statusVazao,
+                            `statusPC` = @statusPC
+                            WHERE `idPC` = @idPC;
+
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+                using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+                {
+                    MySqlDataReader reader = null;
+                    MySqlCommand com = new MySqlCommand(query, con);
+                    com.Parameters.Add("@idPC", MySqlDbType.Int32);
+                    com.Parameters["@idPC"].Value = objPC.idPC;
+                    com.Parameters.Add("@descPC", MySqlDbType.VarChar);
+                    com.Parameters["@descPC"].Value = objPC.descPC;
+                    com.Parameters.Add("@modeloPC", MySqlDbType.VarChar);
+                    com.Parameters["@modeloPC"].Value = objPC.modeloPC;
+                    com.Parameters.Add("@logradouroPC", MySqlDbType.VarChar);
+                    com.Parameters["@logradouroPC"].Value = objPC.logradouroPC;
+                    com.Parameters.Add("@numeroPC", MySqlDbType.VarChar);
+                    com.Parameters["@numeroPC"].Value = objPC.numeroPC;
+                    com.Parameters.Add("@bairroPC", MySqlDbType.VarChar);
+                    com.Parameters["@bairroPC"].Value = objPC.bairroPC;
+                    com.Parameters.Add("@cepPC", MySqlDbType.VarChar);
+                    com.Parameters["@cepPC"].Value = objPC.cepPC;
+                    com.Parameters.Add("@latitudePC", MySqlDbType.Decimal);
+                    com.Parameters["@latitudePC"].Value = objPC.latitudePC;
+                    com.Parameters.Add("@longitudePC", MySqlDbType.Decimal);
+                    com.Parameters["@longitudePC"].Value = objPC.longitudePC;
+                    com.Parameters.Add("@imagemPC", MySqlDbType.VarChar);
+                    com.Parameters["@imagemPC"].Value = objPC.imagemPC;
+                    com.Parameters.Add("@idCidade", MySqlDbType.Int32);
+                    com.Parameters["@idCidade"].Value = objPC.idCidade;
+                    com.Parameters.Add("@idNumCel", MySqlDbType.Int32);
+                    com.Parameters["@idNumCel"].Value = objPC.idNumCel;
+                    com.Parameters.Add("@tempoEnvioMinutos", MySqlDbType.Int32);
+                    com.Parameters["@tempoEnvioMinutos"].Value = objPC.tempoEnvioMinutos;
+                    com.Parameters.Add("@fatorMultVaz", MySqlDbType.Int32);
+                    com.Parameters["@fatorMultVaz"].Value = objPC.fatorMultVaz;
+                    com.Parameters.Add("@statusVazao", MySqlDbType.Bit);
+                    com.Parameters["@statusVazao"].Value = objPC.statusVazao ? 1 : 0;
+                    com.Parameters.Add("@statusPC", MySqlDbType.Bit);
+                    com.Parameters["@statusPC"].Value = objPC.statusPC ? 1 : 0;
+                    con.Open();
+                    try
+                    {
+                        reader = com.ExecuteReader();
+                        if (reader != null && reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                retorno = reader["Retorno"].ToString();
+                            }
+                        }
+                    }
+
+                    catch (Exception e)
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        con.Close();
+                    }
+                }
+            }
+            else
+            {
+                query = @"
+                            INSERT INTO `vrp_horninksys`.`pontocritico`
+                            (`descrPC`, `modeloPC`, `logradouroPC`, `numeroPC`, `bairroPC`, `cepPC`,
+                            `latitudePC`, `longitudePC`, `imagemPC`, `idCidade`, `idNumCel`, `tempoEnvioMinutos`,
+                            `fatorMultVaz`, `statusVazao`, `statusPC`)
+                            VALUES
+                            (
+                                @descPC,
+                                @modeloPC,
+                                @logradouroPC,
+                                @numeroPC,
+                                @bairroPC,
+                                @cepPC,
+                                @latitudePC,
+                                @longitudePC,
+                                @imagemPC,
+                                @idCidade,
+                                @idNumCel,
+                                @tempoEnvioMinutos,
+                                @fatorMultVaz,
+                                @statusVazao,
+                                @statusPC
+                            );
+
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+                using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+                {
+                    MySqlDataReader reader = null;
+                    MySqlCommand com = new MySqlCommand(query, con);
+                    com.Parameters.Add("@descPC", MySqlDbType.VarChar);
+                    com.Parameters["@descPC"].Value = objPC.descPC;
+                    com.Parameters.Add("@modeloPC", MySqlDbType.VarChar);
+                    com.Parameters["@modeloPC"].Value = objPC.modeloPC;
+                    com.Parameters.Add("@logradouroPC", MySqlDbType.VarChar);
+                    com.Parameters["@logradouroPC"].Value = objPC.logradouroPC;
+                    com.Parameters.Add("@numeroPC", MySqlDbType.VarChar);
+                    com.Parameters["@numeroPC"].Value = objPC.numeroPC;
+                    com.Parameters.Add("@bairroPC", MySqlDbType.VarChar);
+                    com.Parameters["@bairroPC"].Value = objPC.bairroPC;
+                    com.Parameters.Add("@cepPC", MySqlDbType.VarChar);
+                    com.Parameters["@cepPC"].Value = objPC.cepPC;
+                    com.Parameters.Add("@latitudePC", MySqlDbType.Decimal);
+                    com.Parameters["@latitudePC"].Value = objPC.latitudePC;
+                    com.Parameters.Add("@longitudePC", MySqlDbType.Decimal);
+                    com.Parameters["@longitudePC"].Value = objPC.longitudePC;
+                    com.Parameters.Add("@imagemPC", MySqlDbType.VarChar);
+                    com.Parameters["@imagemPC"].Value = objPC.imagemPC;
+                    com.Parameters.Add("@idCidade", MySqlDbType.Int32);
+                    com.Parameters["@idCidade"].Value = objPC.idCidade;
+                    com.Parameters.Add("@idNumCel", MySqlDbType.Int32);
+                    com.Parameters["@idNumCel"].Value = objPC.idNumCel;
+                    com.Parameters.Add("@tempoEnvioMinutos", MySqlDbType.Int32);
+                    com.Parameters["@tempoEnvioMinutos"].Value = objPC.tempoEnvioMinutos;
+                    com.Parameters.Add("@fatorMultVaz", MySqlDbType.Int32);
+                    com.Parameters["@fatorMultVaz"].Value = objPC.fatorMultVaz;
+                    com.Parameters.Add("@statusVazao", MySqlDbType.Bit);
+                    com.Parameters["@statusVazao"].Value = objPC.statusVazao ? 1 : 0;
+                    com.Parameters.Add("@statusPC", MySqlDbType.Bit);
+                    com.Parameters["@statusPC"].Value = objPC.statusPC ? 1 : 0;
+                    con.Open();
+                    try
+                    {
+                        reader = com.ExecuteReader();
+                        if (reader != null && reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                retorno = reader["Retorno"].ToString();
+                            }
+                        }
+                    }
+
+                    catch (Exception e)
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        con.Close();
+                    }
+                }
+            }
+
+            return retorno;
+        }
+
+        public string VinculaVRP(int idVRP, int idPC)
+        {
+            MySqlDataReader reader = null;
+            string resp = "";
+
+            var query = @"
+
+                            DELETE FROM `vrp_horninksys`.`vrppc`
+                            WHERE idPC = @idPC;
+
+                            INSERT INTO `vrp_horninksys`.`vrppc`
+                            (`idVRP`, `idPC`)
+                            VALUES
+                            (
+                                @idVRP,
+                                @idPC
+                            );
+
+                            SELECT 'OK' AS Retorno;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idPC", MySqlDbType.Int32);
+                com.Parameters["@idPC"].Value = idPC;
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = idVRP;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        resp = reader["Retorno"].ToString();
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return resp;
+            }
+        }
+
+        public VinculoVRPPCModel ListaVinculoVRP(int idPC)
+        {
+            MySqlDataReader reader = null;
+            VinculoVRPPCModel objRetorno = new VinculoVRPPCModel();
+
+            var query = @"
+                            SELECT 
+	                            idVRP, idPC
+                            FROM vrp_horninksys.vrppc
+                            WHERE idPC = @idPC;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idPC", MySqlDbType.Int32);
+                com.Parameters["@idPC"].Value = idPC;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        objRetorno.idPC = int.Parse(reader["idPC"].ToString());
+                        objRetorno.idVRP = int.Parse(reader["idVRP"].ToString());
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return objRetorno;
             }
         }
     }

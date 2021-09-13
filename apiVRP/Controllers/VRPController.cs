@@ -109,7 +109,7 @@ namespace apiVRP.Controllers
         [HttpGet]
         public IActionResult InsereHistVRP(int idVRP, decimal temperatura, decimal pressaoMont, decimal pressaoJus, decimal vazao, decimal tensaoBat)
         {
-            string resp = "";
+            List<string> resp = new List<string>();
 
             if (idVRP > 0)
             {
@@ -121,19 +121,34 @@ namespace apiVRP.Controllers
                     //-> Verifica se está no horário de inserir o histórico e validar a pressão, senão aguarda.
                     if(retInfo.dataUltimoRegistro.AddMinutes(retInfo.tempoEnvioMinutos) < DateTime.Now)
                     {
-                        objVRP.temperatura = temperatura;
-                        objVRP.chuva = 0; //-> RECEBER ESTE PARÂMETRO DA BASE DO EDER.
+                        // ->Recebendo a previsão do tempo da carga da IA (Eder).
+                        var previsao = _appVRPRepo.PrevisaoDoTempo();
+                        //objVRP.temperatura = temperatura;
+                        objVRP.temperatura = previsao.temperatura;
+                        objVRP.chuva = previsao.chuva;
                         objVRP.pressaoMont = pressaoMont;
                         objVRP.pressaoJus = pressaoJus;
-                        // objVRP.vazao = Math.Round((vazao > 0 ? (((retInfo.fatorMultVaz*60) / vazao) * 60)/1000 : 0), 2);//-> m³/hora
                         objVRP.vazao = Math.Round((vazao > 0 ? ((retInfo.fatorMultVaz) / vazao) : 0), 2);//-> Litros/segundo
-                        objVRP.volume = 0; //-> FAZER O CÁLCULO DO VOLUME AQUI
+                        objVRP.volume = 0;
                         objVRP.tensaoBat = tensaoBat;
                         objVRP.idVRP = idVRP;
                         resp = _appVRPRepo.InsereHistVRP(objVRP);
 
-                        if (resp == "OK")
+                        if (resp[0] == "OK")
                         {
+                            //-> Adicionando os valores para enviar para a IA.
+                            ParametrosIAModel objIA = new ParametrosIAModel();
+                            objIA.volume_1 = decimal.Parse(resp[1]);
+                            objIA.pressão_jusante = objVRP.pressaoJus;
+                            objIA.vazão_instântanea_1 = objVRP.vazao;
+                            //objIA.PC = //-> PRECISA TRAZER A ÚLTIMA PRESSÃO DO PONTO CRÍTICO...
+                            objIA.PC = 0;
+                            objIA.hora = DateTime.Now.ToShortTimeString();
+                            objIA.dia_semana = RetornaDiaDaSemana();
+                            objIA.abertura = "00:00:00";
+                            objIA.fechamento = "00:00:00";
+                            //-> AQUI FARÁ A CHAMADA DA IA.****************************
+
                             var parametros = _appVRPRepo.ListaParametrosVRP(idVRP);
                             var retornoPressao = ConfiguraVRP(parametros, retInfo);
                             retornoPressao.vazao = objVRP.vazao.ToString();
@@ -149,6 +164,7 @@ namespace apiVRP.Controllers
                     {
                         ParametroRetornoModel objRet = new ParametroRetornoModel();
                         objRet.msg = "Aguardando horário.";
+                        objRet.vazao = Math.Round((vazao > 0 ? ((retInfo.fatorMultVaz) / vazao) : 0), 2).ToString();//-> Litros/segundo;
                         return Ok(objRet);
                     }                    
                 }
@@ -351,7 +367,6 @@ namespace apiVRP.Controllers
             }
         }
 
-
         [Route("{idNumCel?}")]
         [Produces("application/json")]
         [HttpGet]
@@ -400,6 +415,59 @@ namespace apiVRP.Controllers
                 return BadRequest("Erro: " + ex.Message);
             }
         }
+
+        [Produces("application/json")]
+        [HttpGet]
+        public IActionResult PrevisaoDoTempo()
+        {
+            PrevisaoDoTempoModel objRetorno = new PrevisaoDoTempoModel();
+
+            try
+            {
+                objRetorno = _appVRPRepo.PrevisaoDoTempo();
+
+                if (objRetorno != null)
+                {
+                    return Ok(objRetorno);
+                }
+                else
+                {
+                    return Ok("Sem informações de retorno.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Erro: " + ex.Message);
+            }
+        }
+
+        [NonAction]
+        private int RetornaDiaDaSemana()
+        {
+            String diaSemana = DateTime.Now.DayOfWeek.ToString();
+
+            switch (diaSemana)
+            {
+                case "Monday":
+                    return 0;
+                case "Tuesday":
+                    return 1;
+                case "Wednesday":
+                    return 2;
+                case "Thursday":
+                    return 3;
+                case "Friday":
+                    return 4;
+                case "Saturday":
+                    return 5;
+                case "Sunday":
+                    return 6;
+                default:
+                    return 9;
+            }
+        }
+
+
 
         [Route("{idNumCel}")]
         [Produces("application/json")]

@@ -152,11 +152,11 @@ namespace VRP.Data.Repositories
             }
         }
 
-        public string InsereHistVRP(HistoricoVRPModel objVRP)
+        public List<string> InsereHistVRP(HistoricoVRPModel objVRP)
         {
             MySqlDataReader reader = null;
             List<CidadeModel> listaRetorno = new List<CidadeModel>();
-            string resp = "";
+            List<string> resp = new List<string>();
 
             var query = @"
                             INSERT INTO historicovrp
@@ -166,7 +166,24 @@ namespace VRP.Data.Repositories
                                 @temperatura, @chuva, @pressaoMont, @pressaoJus, 
                                 @vazao, @volume, @tensaoBat, (SELECT NOW()), @idVRP
                             );
-                            SELECT 'OK' AS Retorno;
+
+                            SET @lastID = (
+                            SELECT 
+	                            idHistorico
+                            FROM vrp_horninksys.historicovrp
+                            WHERE idVRP = @idVRP
+                            ORDER BY idHistorico DESC
+                            LIMIT 1);
+
+                            CALL vrp_horninksys.proc_calculo_volume(@lastID,null);
+
+                            SELECT 
+	                            'OK' AS Retorno
+	                            , volume AS Volume
+                            FROM vrp_horninksys.historicovrp
+                            WHERE idVRP = 1
+                            ORDER BY idHistorico DESC
+                            LIMIT 1;
                         ";
 
             using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
@@ -195,7 +212,8 @@ namespace VRP.Data.Repositories
                     if (reader != null && reader.HasRows)
                     {
                         reader.Read();
-                        resp = reader["Retorno"].ToString();
+                        resp.Add(reader["Retorno"].ToString());
+                        resp.Add(reader["Volume"].ToString());
                     }
                 }
 
@@ -833,7 +851,52 @@ namespace VRP.Data.Repositories
 
             return retorno;
         }
-    
+
+        public PrevisaoDoTempoModel PrevisaoDoTempo()
+        {
+            MySqlDataReader reader = null;
+            PrevisaoDoTempoModel objRetorno = new PrevisaoDoTempoModel();
+
+            var query = @"
+                            SET @datahora = (SELECT NOW());
+                            SELECT * FROM vrp_horninksys.previsaotempo
+                            WHERE data_hora > (SELECT DATE_ADD(@datahora, INTERVAL -1 hour))
+                             AND data_hora < (SELECT DATE_ADD(@datahora, INTERVAL +1 hour))
+                            LIMIT 1;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        objRetorno.id_prevtemp = reader["id_prevtemp"].ToString();
+                        objRetorno.data_hora = DateTime.Parse(reader["data_hora"].ToString());
+                        objRetorno.chuva = decimal.Parse(reader["chuva"].ToString());
+                        objRetorno.temperatura = decimal.Parse(reader["temperatura"].ToString());
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return objRetorno;
+            }
+        }
+
+
+
         public List<VRPModel> VerificaNumCelVRP(int idNumCel) {
             MySqlDataReader reader = null;
             List<VRPModel> listaRetorno = new List<VRPModel>();
@@ -845,7 +908,7 @@ namespace VRP.Data.Repositories
                                 VRP.imagem, VRP.idCidade, VRP.idNumCel, VRP.tempoEnvioMinutos, 
                                 VRP.fatorMultVaz, VRP.status
                             FROM vrp_horninksys.vrp AS VRP
-                            WHERE VRP.idNumCel = @idVRP;
+                            WHERE VRP.idNumCel = @idNumCel;
                         ";
 
             using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
