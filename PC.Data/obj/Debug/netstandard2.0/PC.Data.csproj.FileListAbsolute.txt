@@ -7,3 +7,12 @@ C:\Projetos\VRP\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.dll
 C:\Projetos\VRP\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.pdb
 C:\Projetos\VRP\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.csproj.CoreCompileInputs.cache
 C:\Projetos\VRP\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.csprojAssemblyReference.cache
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\bin\Debug\netstandard2.0\PC.Data.deps.json
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\bin\Debug\netstandard2.0\PC.Data.dll
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\bin\Debug\netstandard2.0\PC.Data.pdb
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.csproj.AssemblyReference.cache
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.AssemblyInfoInputs.cache
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.AssemblyInfo.cs
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.csproj.CoreCompileInputs.cache
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.dll
+C:\_PROJETOS\_PESSOAL\vrpAPI\PC.Data\obj\Debug\netstandard2.0\PC.Data.pdb

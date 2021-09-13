@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using PC.Data.Repositories;
 using System;
 using System.Collections.Generic;
 using VRP.Data.Models;
@@ -13,6 +14,7 @@ namespace apiVRP.Controllers
     public class VRPController : ControllerBase
     {
         private readonly VRPRepository _appVRPRepo;
+        private readonly PontoCriticoRepository _appPCRepo;
 
         #region Construtor
         IConfiguration Configuration;
@@ -23,6 +25,7 @@ namespace apiVRP.Controllers
             _hostingEnvironment = hostingEnvironment;
             Configuration = iConfig;
             _appVRPRepo = new VRPRepository(Configuration);
+            _appPCRepo = new PontoCriticoRepository(Configuration);
         }
         #endregion
 
@@ -115,6 +118,8 @@ namespace apiVRP.Controllers
             {
                 try
                 {
+                    var vrp = _appVRPRepo.ListaVRP(idVRP);
+
                     var retInfo = _appVRPRepo.PesquisaVRPParamAdc(idVRP);
                     HistoricoVRPModel objVRP = new HistoricoVRPModel();
 
@@ -132,7 +137,7 @@ namespace apiVRP.Controllers
                         objVRP.volume = 0;
                         objVRP.tensaoBat = tensaoBat;
                         objVRP.idVRP = idVRP;
-                        resp = _appVRPRepo.InsereHistVRP(objVRP);
+                        resp = _appVRPRepo.InsereHistVRP(objVRP); //-> Insere Histórico, calcula o volume e retorna-o para repassar para a IA.
 
                         if (resp[0] == "OK")
                         {
@@ -141,19 +146,39 @@ namespace apiVRP.Controllers
                             objIA.volume_1 = decimal.Parse(resp[1]);
                             objIA.pressão_jusante = objVRP.pressaoJus;
                             objIA.vazão_instântanea_1 = objVRP.vazao;
-                            //objIA.PC = //-> PRECISA TRAZER A ÚLTIMA PRESSÃO DO PONTO CRÍTICO...
-                            objIA.PC = 0;
+                            objIA.PC = _appPCRepo.ListaUltimaPressaoPC(objVRP.idVRP).pressaoPC;
                             objIA.hora = DateTime.Now.ToShortTimeString();
                             objIA.dia_semana = RetornaDiaDaSemana();
-                            objIA.abertura = "00:00:00";
-                            objIA.fechamento = "00:00:00";
-                            //-> AQUI FARÁ A CHAMADA DA IA.****************************
+                            string _abertura = _appVRPRepo.RetornaHoraAberturaVRP(objVRP.idVRP).horaInicial;
+                            objIA.abertura = _abertura != null ? _abertura : "00:00";
+                            string _fechamento = _appVRPRepo.RetornaHoraFechamentoVRP(objVRP.idVRP).horaFinal;
+                            objIA.fechamento = _fechamento != null ? _fechamento : "00:00";
+                            
+                            ParametroRetornoModel objretornoPressao = new ParametroRetornoModel();
 
-                            var parametros = _appVRPRepo.ListaParametrosVRP(idVRP);
-                            var retornoPressao = ConfiguraVRP(parametros, retInfo);
-                            retornoPressao.vazao = objVRP.vazao.ToString();
+                            if (vrp[0].tipParamCod == 1)
+                            {
+                                var parametros = _appVRPRepo.ListaParametrosVRP(idVRP);
+                                objretornoPressao = ConfiguraVRP(parametros, retInfo);
+                                objretornoPressao.vazao = objVRP.vazao.ToString();
+                            }
+                            else if (vrp[0].tipParamCod == 2)
+                            {
+                                //-> AQUI SERÁ CHAMADO A API DA INTELIGÊNCIA ARTIFICIAL. ****************************************************
+                                objretornoPressao.idVRP = objVRP.idVRP;
+                                objretornoPressao.pressao = 0; // ->  A PRESSÃO DA IA ENTRARÁ AQUI!!!
+                                objretornoPressao.vazao = objVRP.vazao.ToString();
+                                objretornoPressao.msg = "OK";
+                            }
+                            else if (vrp[0].tipParamCod == 3)
+                            {
+                                objretornoPressao.idVRP = objVRP.idVRP;
+                                objretornoPressao.pressao = 0;
+                                objretornoPressao.vazao = objVRP.vazao.ToString();
+                                objretornoPressao.msg = "DESATIVADA";
+                            }
 
-                            return Ok(retornoPressao);
+                            return Ok(objretornoPressao);
                         }
                         else
                         {

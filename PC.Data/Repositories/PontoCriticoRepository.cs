@@ -629,5 +629,56 @@ namespace PC.Data.Repositories
                 return objRetorno;
             }
         }
+
+        public HistoricoPontoCriticoModel ListaUltimaPressaoPC(int idVRP)
+        {
+            var query = "";
+            MySqlDataReader reader = null;
+            HistoricoPontoCriticoModel objRetorno = new HistoricoPontoCriticoModel();
+
+            query = @"
+                        SELECT 
+	                        HistPC.idHisPC, HistPC.idPC, HistPC.pressaoPC, HistPC.vazaoPC
+	                        , HistPC.tensaoBateriaPC, HistPC.dataHoraPC
+                        FROM vrp_horninksys.historicopontocritico AS HistPC
+                        INNER JOIN vrp_horninksys.vrppc AS VRPPC ON VRPPC.idPC = HistPC.idPC
+                        WHERE VRPPC.idVRP = @idVRP
+                        ORDER BY HistPC.dataHoraPC DESC
+                        LIMIT 1;
+                    ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = idVRP;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        objRetorno.idHisPC = int.Parse(reader["idHisPC"].ToString());
+                        objRetorno.idPC = int.Parse(reader["idPC"].ToString());
+                        objRetorno.pressaoPC = decimal.Parse(reader["pressaoPC"].ToString());
+                        objRetorno.vazaoPC = decimal.Parse(reader["vazaoPC"].ToString());
+                        objRetorno.tensaoBateriaPC = decimal.Parse(reader["tensaoBateriaPC"].ToString());
+                        objRetorno.dataHoraPC = DateTime.Parse(reader["dataHoraPC"].ToString());
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return objRetorno;
+            }
+        }
     }
 }

@@ -243,5 +243,38 @@ namespace apiVRP.Controllers
                 return BadRequest("Erro: " + ex.Message);
             }
         }
+
+        //[Route("{idPC}")]
+        //[Produces("application/json")]
+        //[HttpPost]
+        //public IActionResult ListaUltimaPressao(int idPC)
+        //{
+        //    List<HistoricoPontoCriticoModel> listaRetorno = new List<HistoricoPontoCriticoModel>();
+
+        //    if (idPC > 0)
+        //    {
+        //        try
+        //        {
+        //            listaRetorno = _appPCRepo.ListaHistoricoPC(objParametros);
+
+        //            if (listaRetorno.Count > 0)
+        //            {
+        //                return Ok(listaRetorno);
+        //            }
+        //            else
+        //            {
+        //                return Ok("Sem informações de retorno.");
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            return BadRequest("Erro: " + ex.Message);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        return BadRequest("Id do ponto crítico inválido!");
+        //    }
+        //}
     }
 }

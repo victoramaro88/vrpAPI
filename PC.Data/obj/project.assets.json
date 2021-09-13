@@ -803,19 +803,26 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Victor Amaro\\.nuget\\packages\\": {}
+    "C:\\Users\\32263773886\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Projetos\\VRP\\vrpAPI\\PC.Data\\PC.Data.csproj",
+      "projectUniqueName": "C:\\_PROJETOS\\_PESSOAL\\vrpAPI\\PC.Data\\PC.Data.csproj",
       "projectName": "PC.Data",
-      "projectPath": "C:\\Projetos\\VRP\\vrpAPI\\PC.Data\\PC.Data.csproj",
-      "packagesPath": "C:\\Users\\Victor Amaro\\.nuget\\packages\\",
-      "outputPath": "C:\\Projetos\\VRP\\vrpAPI\\PC.Data\\obj\\",
+      "projectPath": "C:\\_PROJETOS\\_PESSOAL\\vrpAPI\\PC.Data\\PC.Data.csproj",
+      "packagesPath": "C:\\Users\\32263773886\\.nuget\\packages\\",
+      "outputPath": "C:\\_PROJETOS\\_PESSOAL\\vrpAPI\\PC.Data\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+      ],
       "configFilePaths": [
-        "C:\\Users\\Victor Amaro\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\32263773886\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -827,6 +834,7 @@
       },
       "frameworks": {
         "netstandard2.0": {
+          "targetAlias": "netstandard2.0",
           "projectReferences": {}
         }
       },
@@ -838,6 +846,7 @@
     },
     "frameworks": {
       "netstandard2.0": {
+        "targetAlias": "netstandard2.0",
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": {
             "target": "Package",
@@ -868,7 +877,7 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.401\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.301\\RuntimeIdentifierGraph.json"
       }
     }
   }

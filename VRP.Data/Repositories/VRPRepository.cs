@@ -32,8 +32,8 @@ namespace VRP.Data.Repositories
                             SELECT 
                                 VRP.idVRP, VRP.descrVRP, VRP.modelo, VRP.logradouro, 
                                 VRP.numero, VRP.bairro, VRP.cep, VRP.latitude, VRP.longitude,
-                                VRP.imagem, VRP.idCidade, CIDADE.descCidade, VRP.idNumCel, VRP.tempoEnvioMinutos, 
-                                VRP.fatorMultVaz, VRP.status
+                                VRP.imagem, VRP.idCidade, CIDADE.descCidade, VRP.idNumCel, VRP.tipParamCod, 
+                                VRP.tempoEnvioMinutos, VRP.fatorMultVaz, VRP.status
                             FROM vrp_horninksys.vrp AS VRP
                             INNER JOIN vrp_horninksys.cidade AS CIDADE ON CIDADE.idCidade = VRP.idCidade
                         ";
@@ -75,6 +75,7 @@ namespace VRP.Data.Repositories
                                 idCidade = int.Parse(reader["idCidade"].ToString()),
                                 descCidade = reader["descCidade"].ToString(),
                                 idNumCel = int.Parse(reader["idNumCel"].ToString()),
+                                tipParamCod = int.Parse(reader["tipParamCod"].ToString()),
                                 tempoEnvioMinutos = int.Parse(reader["tempoEnvioMinutos"].ToString()),
                                 fatorMultVaz = int.Parse(reader["fatorMultVaz"].ToString()),
                                 status = reader["status"].ToString() == "1" ? true : false
@@ -238,7 +239,7 @@ namespace VRP.Data.Repositories
             var query = @"
                             SELECT
 	                            idParametro, pressao, horaInicial, horaFinal,
-	                            pressaoFds, idVRP, flStatus
+	                            pressaoFds, idVRP, sttAbertura, sttFechamento, flStatus
                             FROM parametrosvrp
                             WHERE idVRP = @idVRP and flStatus = 1;
                         ";
@@ -264,6 +265,8 @@ namespace VRP.Data.Repositories
                                 horaFinal = reader["horaFinal"].ToString(),
                                 pressaoFds = decimal.Parse(reader["pressaoFds"].ToString()),
                                 idVRP = int.Parse(reader["idVRP"].ToString()),
+                                sttAbertura = reader["sttAbertura"].ToString() == "1" ? true : false,
+                                sttFechamento = reader["sttFechamento"].ToString() == "1" ? true : false,
                                 flStatus = reader["flStatus"].ToString() == "1" ? true : false
                             };
 
@@ -297,6 +300,8 @@ namespace VRP.Data.Repositories
                         `horaInicial` = @horaInicial,
                         `horaFinal` = @horaFinal,
                         `pressaoFds` = @pressaoFds,
+                        `sttAbertura` = @sttAbertura,
+                        `sttFechamento` = @sttFechamento,
                         `flStatus` = @flStatus
                         WHERE `idParametro` = @idParametro;
 
@@ -304,43 +309,47 @@ namespace VRP.Data.Repositories
                      ";
 
             using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlDataReader reader = null;
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@pressao", MySqlDbType.Decimal);
+                com.Parameters["@pressao"].Value = objParametro.pressao;
+                com.Parameters.Add("@horaInicial", MySqlDbType.VarChar);
+                com.Parameters["@horaInicial"].Value = objParametro.horaInicial;
+                com.Parameters.Add("@horaFinal", MySqlDbType.VarChar);
+                com.Parameters["@horaFinal"].Value = objParametro.horaFinal;
+                com.Parameters.Add("@pressaoFds", MySqlDbType.Decimal);
+                com.Parameters["@pressaoFds"].Value = objParametro.pressaoFds;
+                com.Parameters.Add("@sttAbertura", MySqlDbType.Bit);
+                com.Parameters["@sttAbertura"].Value = objParametro.sttAbertura;
+                com.Parameters.Add("@sttFechamento", MySqlDbType.Bit);
+                com.Parameters["@sttFechamento"].Value = objParametro.sttFechamento;
+                com.Parameters.Add("@flStatus", MySqlDbType.Bit);
+                com.Parameters["@flStatus"].Value = objParametro.flStatus;
+                com.Parameters.Add("@idParametro", MySqlDbType.Int32);
+                com.Parameters["@idParametro"].Value = objParametro.idParametro;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
                     {
-                        MySqlDataReader reader = null;
-                        MySqlCommand com = new MySqlCommand(query, con);
-                        com.Parameters.Add("@pressao", MySqlDbType.Decimal);
-                        com.Parameters["@pressao"].Value = objParametro.pressao;
-                        com.Parameters.Add("@horaInicial", MySqlDbType.VarChar);
-                        com.Parameters["@horaInicial"].Value = objParametro.horaInicial;
-                        com.Parameters.Add("@horaFinal", MySqlDbType.VarChar);
-                        com.Parameters["@horaFinal"].Value = objParametro.horaFinal;
-                        com.Parameters.Add("@pressaoFds", MySqlDbType.Decimal);
-                        com.Parameters["@pressaoFds"].Value = objParametro.pressaoFds;
-                        com.Parameters.Add("@flStatus", MySqlDbType.Bit);
-                        com.Parameters["@flStatus"].Value = objParametro.flStatus;
-                        com.Parameters.Add("@idParametro", MySqlDbType.Int32);
-                        com.Parameters["@idParametro"].Value = objParametro.idParametro;
-                        con.Open();
-                        try
+                        while (reader.Read())
                         {
-                            reader = com.ExecuteReader();
-                            if (reader != null && reader.HasRows)
-                            {
-                                while (reader.Read())
-                                {
-                                    retorno = reader["Retorno"].ToString();
-                                }
-                            }
-                        }
-
-                        catch (Exception e)
-                        {
-                            throw;
-                        }
-                        finally
-                        {
-                            con.Close();
+                            retorno = reader["Retorno"].ToString();
                         }
                     }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+            }
 
             return retorno;
         }
@@ -394,11 +403,11 @@ namespace VRP.Data.Repositories
                 foreach (var item in listaParametros)
                 {
                     query = @"INSERT INTO `vrp_horninksys`.`parametrosvrp`
-                            (`pressao`,`pressaoFds`,`horaInicial`,`horaFinal`,`idVRP`,`flStatus`)
-                            VALUES
-                            (@pressao, @pressaoFds, @horaInicial, @horaFinal, @idVRP, 1); 
+                                (`pressao`,`horaInicial`,`horaFinal`,`pressaoFds`,`idVRP`,`sttAbertura`,`sttFechamento`,`flStatus`)
+                              VALUES
+                                (@pressao, @horaInicial, @horaFinal, @pressaoFds, @idVRP, @sttAbertura, @sttFechamento, 1); 
 
-                        SELECT 'OK' AS Retorno;";
+                              SELECT 'OK' AS Retorno;";
 
                     using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
                     {
@@ -414,6 +423,10 @@ namespace VRP.Data.Repositories
                         com.Parameters["@horaFinal"].Value = item.horaFinal;
                         com.Parameters.Add("@idVRP", MySqlDbType.Int32);
                         com.Parameters["@idVRP"].Value = item.idVRP;
+                        com.Parameters.Add("@sttAbertura", MySqlDbType.Bit);
+                        com.Parameters["@sttAbertura"].Value = item.sttAbertura;
+                        com.Parameters.Add("@sttFechamento", MySqlDbType.Bit);
+                        com.Parameters["@sttFechamento"].Value = item.sttFechamento;
                         con.Open();
                         try
                         {
@@ -544,7 +557,7 @@ namespace VRP.Data.Repositories
             MySqlDataReader reader = null;
             List<HistoricoVRPModel> listaRetorno = new List<HistoricoVRPModel>();
 
-            if(objParametros.dataInicial != null && objParametros.dataFinal != null)
+            if (objParametros.dataInicial != null && objParametros.dataFinal != null)
             {
                 query = @"
                             SELECT 
@@ -687,7 +700,8 @@ namespace VRP.Data.Repositories
             string retorno = "";
             var query = "";
 
-            if(objVRP.idVRP > 0) {
+            if (objVRP.idVRP > 0)
+            {
                 query = @"
                             UPDATE `vrp_horninksys`.`vrp`
                             SET
@@ -702,6 +716,7 @@ namespace VRP.Data.Repositories
                             `imagem` = @imagem,
                             `idCidade` = @idCidade,
                             `idNumCel` = @idNumCel,
+                            `tipParamCod` = @tipParamCod,
                             `tempoEnvioMinutos` = @tempoEnvioMinutos,
                             `fatorMultVaz` = @fatorMultVaz,
                             `status` = @status
@@ -738,6 +753,8 @@ namespace VRP.Data.Repositories
                     com.Parameters["@idCidade"].Value = objVRP.idCidade;
                     com.Parameters.Add("@idNumCel", MySqlDbType.Int32);
                     com.Parameters["@idNumCel"].Value = objVRP.idNumCel;
+                    com.Parameters.Add("@tipParamCod", MySqlDbType.Int32);
+                    com.Parameters["@tipParamCod"].Value = objVRP.tipParamCod;
                     com.Parameters.Add("@tempoEnvioMinutos", MySqlDbType.Int32);
                     com.Parameters["@tempoEnvioMinutos"].Value = objVRP.tempoEnvioMinutos;
                     com.Parameters.Add("@fatorMultVaz", MySqlDbType.Int32);
@@ -766,10 +783,13 @@ namespace VRP.Data.Repositories
                         con.Close();
                     }
                 }
-            } else {
+            }
+            else
+            {
                 query = @"
                             INSERT INTO `vrp_horninksys`.`vrp`
-                            (`descrVRP`, `modelo`, `logradouro`, `numero`, `bairro`, `cep`, `latitude`, `longitude`, `imagem`, `idCidade`, `idNumCel`, `tempoEnvioMinutos`, `fatorMultVaz`, `status`)
+                            (`descrVRP`, `modelo`, `logradouro`, `numero`, `bairro`, `cep`, `latitude`, `longitude`
+                            , `imagem`, `idCidade`, `idNumCel`, `tipParamCod`, `tempoEnvioMinutos`, `fatorMultVaz`, `status`)
                             VALUES
                             (
                                 @descrVRP,
@@ -783,6 +803,7 @@ namespace VRP.Data.Repositories
                                 @imagem,
                                 @idCidade,
                                 @idNumCel,
+                                @tipParamCod,
                                 @tempoEnvioMinutos,
                                 @fatorMultVaz,
                                 @status
@@ -819,6 +840,8 @@ namespace VRP.Data.Repositories
                     com.Parameters["@idCidade"].Value = objVRP.idCidade;
                     com.Parameters.Add("@idNumCel", MySqlDbType.Int32);
                     com.Parameters["@idNumCel"].Value = objVRP.idNumCel;
+                    com.Parameters.Add("@tipParamCod", MySqlDbType.Int32);
+                    com.Parameters["@tipParamCod"].Value = objVRP.tipParamCod;
                     com.Parameters.Add("@tempoEnvioMinutos", MySqlDbType.Int32);
                     com.Parameters["@tempoEnvioMinutos"].Value = objVRP.tempoEnvioMinutos;
                     com.Parameters.Add("@fatorMultVaz", MySqlDbType.Int32);
@@ -895,9 +918,92 @@ namespace VRP.Data.Repositories
             }
         }
 
+        public ParametrosVRPModel RetornaHoraAberturaVRP(int idVRP)
+        {
+            MySqlDataReader reader = null;
+            ParametrosVRPModel objRetorno = new ParametrosVRPModel();
+
+            var query = @"
+                            SELECT horaInicial FROM vrp_horninksys.parametrosvrp
+                            WHERE sttAbertura = 1 
+                                AND idVRP = @idVRP 
+                                AND flStatus = 1;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = idVRP;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        objRetorno.horaInicial = reader["horaInicial"].ToString();
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return objRetorno;
+            }
+        }
+
+        public ParametrosVRPModel RetornaHoraFechamentoVRP(int idVRP)
+        {
+            MySqlDataReader reader = null;
+            ParametrosVRPModel objRetorno = new ParametrosVRPModel();
+
+            var query = @"
+                            SELECT horaFinal FROM vrp_horninksys.parametrosvrp
+                            WHERE sttFechamento = 1 
+                            AND idVRP = @idVRP  
+                            AND flStatus = 1;
+                        ";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@idVRP", MySqlDbType.Int32);
+                com.Parameters["@idVRP"].Value = idVRP;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        reader.Read();
+                        objRetorno.horaFinal = reader["horaFinal"].ToString();
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return objRetorno;
+            }
+        }
 
 
-        public List<VRPModel> VerificaNumCelVRP(int idNumCel) {
+
+        public List<VRPModel> VerificaNumCelVRP(int idNumCel)
+        {
             MySqlDataReader reader = null;
             List<VRPModel> listaRetorno = new List<VRPModel>();
 
@@ -962,7 +1068,8 @@ namespace VRP.Data.Repositories
             }
         }
 
-        public List<int> ListaIDsNumCelUsados() {
+        public List<int> ListaIDsNumCelUsados()
+        {
             MySqlDataReader reader = null;
             List<int> listaRetorno = new List<int>();
 

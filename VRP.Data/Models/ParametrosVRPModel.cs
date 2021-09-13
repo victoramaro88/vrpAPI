@@ -12,6 +12,8 @@ namespace VRP.Data.Models
         public string horaFinal { get; set; }
         public decimal pressaoFds { get; set; }
         public int idVRP { get; set; }
+        public bool sttAbertura { get; set; }
+        public bool sttFechamento { get; set; }
         public bool flStatus { get; set; }
     }
 }
