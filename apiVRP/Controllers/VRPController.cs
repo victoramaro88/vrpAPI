@@ -466,6 +466,32 @@ namespace apiVRP.Controllers
             }
         }
 
+        [Route("{idParametro?}")]
+        [Produces("application/json")]
+        [HttpGet]
+        public IActionResult ListarTipoParametro(int idParametro = 0)
+        {
+            List<TipoParametroModel> listaRetorno = new List<TipoParametroModel>();
+
+            try
+            {
+                listaRetorno = _appVRPRepo.ListarTipoParametro(idParametro);
+
+                if (listaRetorno.Count > 0)
+                {
+                    return Ok(listaRetorno);
+                }
+                else
+                {
+                    return Ok("Sem informações de retorno.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Erro: " + ex.Message);
+            }
+        }
+
         [NonAction]
         private int RetornaDiaDaSemana()
         {

@@ -1000,6 +1000,62 @@ namespace VRP.Data.Repositories
             }
         }
 
+        public List<TipoParametroModel> ListarTipoParametro(int idParametro)
+        {
+            MySqlDataReader reader = null;
+            List<TipoParametroModel> listaRetorno = new List<TipoParametroModel>();
+
+            var query = @"
+                            SELECT 
+	                            tipParamCod, tipParamDesc, tipParamStatus 
+                            FROM vrp_horninksys.tipoparametro                             
+                        ";
+
+            if(idParametro > 0)
+            {
+                query += @" WHERE tipParamCod = @tipParamCod";
+            }
+
+            query += @";";
+
+            using (MySqlConnection con = new MySqlConnection(_scDB_VRP))
+            {
+                MySqlCommand com = new MySqlCommand(query, con);
+                com.Parameters.Add("@tipParamCod", MySqlDbType.Int32);
+                com.Parameters["@tipParamCod"].Value = idParametro;
+                con.Open();
+                try
+                {
+                    reader = com.ExecuteReader();
+                    if (reader != null && reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            var ret = new TipoParametroModel()
+                            {
+                                tipParamCod = int.Parse(reader["tipParamCod"].ToString()),
+                                tipParamDesc = reader["tipParamDesc"].ToString(),
+                                tipParamStatus = reader["tipParamStatus"].ToString() == "1" ? true : false
+                            };
+
+                            listaRetorno.Add(ret);
+                        }
+                    }
+                }
+
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    con.Close();
+                }
+
+                return listaRetorno;
+            }
+        }
+
 
 
         public List<VRPModel> VerificaNumCelVRP(int idNumCel)
