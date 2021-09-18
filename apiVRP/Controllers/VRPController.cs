@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 using PC.Data.Repositories;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using VRP.Data.Models;
 using VRP.Data.Repositories;
 
@@ -164,9 +168,10 @@ namespace apiVRP.Controllers
                             }
                             else if (vrp[0].tipParamCod == 2)
                             {
-                                //-> AQUI SERÁ CHAMADO A API DA INTELIGÊNCIA ARTIFICIAL. ****************************************************
+                                //-> CHAMANDO A API DA INTELIGÊNCIA ARTIFICIAL.
                                 objretornoPressao.idVRP = objVRP.idVRP;
-                                objretornoPressao.pressao = 0; // ->  A PRESSÃO DA IA ENTRARÁ AQUI!!!
+                                //objretornoPressao.pressao = ConsultaIA(objIA, objVRP.idVRP).Result;
+                                objretornoPressao.pressao = ConsultaIA(objIA, 6).Result; //-> *** FIXADO NO NÚMERO 6 PARA AJUSTAR A IA DO EDER, DEPOIS MUDAR PARA A LINHA DE CIMA.
                                 objretornoPressao.vazao = objVRP.vazao.ToString();
                                 objretornoPressao.msg = "OK";
                             }
@@ -518,7 +523,35 @@ namespace apiVRP.Controllers
             }
         }
 
+        [Produces("application/json")]
+        [HttpGet]
+        public async Task<decimal> ConsultaIA([FromBody] ParametrosIAModel objIA, int idVRP)
+        {
+            var client = new HttpClient();
+            try
+            {
+                client.BaseAddress = new System.Uri("http://horninksys.construvap.eng.br:5000/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
+                HttpResponseMessage response = await client.PostAsJsonAsync("predict/" + idVRP, objIA);
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    string ret = await response.Content.ReadAsStringAsync();
+                    JObject json = JObject.Parse(ret);
+                    return decimal.Parse(json["prediction"].ToString());
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
         [Route("{idNumCel}")]
         [Produces("application/json")]
